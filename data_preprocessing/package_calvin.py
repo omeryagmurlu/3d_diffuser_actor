@@ -157,11 +157,11 @@ def process_datas(datas, mode, traj_len, execute_every, keyframe_inds):
     # Save everything to disk
     state_dict = [
         frame_ids,
-        rgb_pcd,
-        action_tensors,
+        rgb_pcd.numpy(),
+        [t.numpy() for t in action_tensors],
         camera_dicts,
-        gripper_tensors,
-        trajectories,
+        [t.numpy() for t in gripper_tensors],
+        [t.numpy() for t in trajectories],
         datas['annotation_id']
     ]
 

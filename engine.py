@@ -14,6 +14,8 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 
+from utils.logger_nope import NopeLogger
+
 
 class BaseTrainTester:
     """Basic train/test class to be inherited."""
@@ -27,6 +29,13 @@ class BaseTrainTester:
 
         if dist.get_rank() == 0:
             self.writer = SummaryWriter(log_dir=args.log_dir)
+
+            if self.args.wandb_enabled:
+                from utils.logger_wandb import WandBLogger
+
+                self.logger = WandBLogger(self.args)
+            else:
+                self.logger = NopeLogger(self.args)
 
     @staticmethod
     def get_datasets():
@@ -164,6 +173,8 @@ class BaseTrainTester:
                     ),
                     split='train'
                 )
+                if dist.get_rank() == 0:
+                    self.logger.log({"eval_train/loss": new_loss}, commit=False)
                 print("Test evaluation.......")
                 model.eval()
                 new_loss = self.evaluate_nsteps(
@@ -173,12 +184,20 @@ class BaseTrainTester:
                         int(4 * len(self.args.tasks)/self.args.batch_size_val)
                     )
                 )
+                if dist.get_rank() == 0:
+                    self.logger.log({"eval_test/loss": new_loss}, commit=False)
+
                 if dist.get_rank() == 0:  # save model
                     best_loss = self.save_checkpoint(
                         model, optimizer, step_id,
                         new_loss, best_loss
                     )
+                    if best_loss == new_loss:
+                        self.logger.log_summary("best_loss", best_loss)
                 model.train()
+
+            if dist.get_rank() == 0:
+                self.logger.log({})
 
         return model
 

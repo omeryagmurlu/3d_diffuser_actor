@@ -22,6 +22,8 @@ gripper_buffer=0.01
 val_freq=5000
 quaternion_format=wxyz
 
+wandb_entity=omeryagmurlu
+
 run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
@@ -63,8 +65,9 @@ CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --fps_subsampling_factor $fps_subsampling_factor \
     --lang_enhanced $lang_enhanced \
     --quaternion_format $quaternion_format \
-    --run_log_dir $run_log_dir
-
+    --run_log_dir $run_log_dir \
+    --wandb_enabled \
+    --wandb_entity $wandb_entity
 
 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     online_evaluation_calvin/evaluate_policy.py \
