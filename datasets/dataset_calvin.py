@@ -151,7 +151,7 @@ class CalvinDataset(RLBenchDataset):
         rgbs = self._unnormalize_rgb(rgbs)
 
         # Get action tensors for respective frame ids
-        action = torch.cat([episode[2][i] for i in frame_ids])
+        action = torch.cat([torch.from_numpy(episode[2][i]) for i in frame_ids])
 
         # Sample one instruction feature
         if self._instructions is not None:
@@ -162,7 +162,7 @@ class CalvinDataset(RLBenchDataset):
             instr = torch.zeros((rgbs.shape[0], 53, 512))
 
         # Get gripper tensors for respective frame ids
-        gripper = torch.cat([episode[4][i] for i in frame_ids])
+        gripper = torch.cat([torch.from_numpy(episode[4][i]) for i in frame_ids])
 
         # gripper history
         if len(episode) > 7:
@@ -171,8 +171,8 @@ class CalvinDataset(RLBenchDataset):
             ], dim=0)
         else:
             gripper_history = torch.stack([
-                torch.cat([episode[4][max(0, i-2)] for i in frame_ids]),
-                torch.cat([episode[4][max(0, i-1)] for i in frame_ids]),
+                torch.cat([torch.from_numpy(episode[4][max(0, i-2)]) for i in frame_ids]),
+                torch.cat([torch.from_numpy(episode[4][max(0, i-1)]) for i in frame_ids]),
                 gripper
             ], dim=1)
 
@@ -181,12 +181,12 @@ class CalvinDataset(RLBenchDataset):
         if self._return_low_lvl_trajectory:
             if len(episode) > 5:
                 traj_items = [
-                    self._interpolate_traj(episode[5][i]) for i in frame_ids
+                    self._interpolate_traj(torch.from_numpy(episode[5][i])) for i in frame_ids
                 ]
             else:
                 traj_items = [
                     self._interpolate_traj(
-                        torch.cat([episode[4][i], episode[2][i]], dim=0)
+                        torch.cat([torch.from_numpy(episode[4][i]), torch.from_numpy(episode[2][i])], dim=0)
                     ) for i in frame_ids
                 ]
             max_l = max(len(item) for item in traj_items)

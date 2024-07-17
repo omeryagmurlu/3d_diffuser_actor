@@ -164,6 +164,8 @@ def generate_visualizations(pred, gt, mask, box_size=0.05):
 
 if __name__ == '__main__':
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    print(torch.cuda.is_available())
+    print(torch.cuda.device_count())
     # Arguments
     args = Arguments().parse_args()
     print("Arguments:")

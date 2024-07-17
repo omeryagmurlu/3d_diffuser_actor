@@ -10,8 +10,8 @@ interpolation_length=20
 num_history=3
 diffusion_timesteps=25
 B=30
-C=192
-ngpus=6
+C=120
+ngpus=3
 backbone=clip
 image_size="256,256"
 relative_action=1
@@ -28,7 +28,7 @@ run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolat
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
 
-CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
+CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=3,4,5 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     main_trajectory_calvin.py \
     --tasks A B C D\
     --backbone $backbone \
@@ -69,28 +69,28 @@ CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --wandb_enabled \
     --wandb_entity $wandb_entity
 
-torchrun --nproc_per_node $ngpus --master_port $RANDOM \
-    online_evaluation_calvin/evaluate_policy.py \
-    --calvin_dataset_path calvin/dataset/task_ABC_D \
-    --calvin_model_path calvin/calvin_models \
-    --text_encoder clip \
-    --text_max_length 16 \
-    --tasks A B C D\
-    --backbone $backbone \
-    --gripper_loc_bounds $gripper_loc_bounds \
-    --gripper_loc_bounds_buffer $gripper_buffer \
-    --calvin_gripper_loc_bounds calvin/dataset/task_ABC_D/validation/statistics.yaml \
-    --embedding_dim $C \
-    --action_dim 7 \
-    --use_instruction 1 \
-    --rotation_parametrization 6D \
-    --diffusion_timesteps $diffusion_timesteps \
-    --interpolation_length $interpolation_length \
-    --num_history $num_history \
-    --relative_action $relative_action \
-    --fps_subsampling_factor $fps_subsampling_factor \
-    --lang_enhanced $lang_enhanced \
-    --save_video 0 \
-    --base_log_dir train_logs/${main_dir}/${run_log_dir}/eval_logs/ \
-    --quaternion_format $quaternion_format \
-    --checkpoint train_logs/${main_dir}/${run_log_dir}/last.pth
+# torchrun --nproc_per_node $ngpus --master_port $RANDOM \
+#     online_evaluation_calvin/evaluate_policy.py \
+#     --calvin_dataset_path calvin/dataset/task_ABC_D \
+#     --calvin_model_path calvin/calvin_models \
+#     --text_encoder clip \
+#     --text_max_length 16 \
+#     --tasks A B C D\
+#     --backbone $backbone \
+#     --gripper_loc_bounds $gripper_loc_bounds \
+#     --gripper_loc_bounds_buffer $gripper_buffer \
+#     --calvin_gripper_loc_bounds calvin/dataset/task_ABC_D/validation/statistics.yaml \
+#     --embedding_dim $C \
+#     --action_dim 7 \
+#     --use_instruction 1 \
+#     --rotation_parametrization 6D \
+#     --diffusion_timesteps $diffusion_timesteps \
+#     --interpolation_length $interpolation_length \
+#     --num_history $num_history \
+#     --relative_action $relative_action \
+#     --fps_subsampling_factor $fps_subsampling_factor \
+#     --lang_enhanced $lang_enhanced \
+#     --save_video 0 \
+#     --base_log_dir train_logs/${main_dir}/${run_log_dir}/eval_logs/ \
+#     --quaternion_format $quaternion_format \
+#     --checkpoint train_logs/${main_dir}/${run_log_dir}/last.pth

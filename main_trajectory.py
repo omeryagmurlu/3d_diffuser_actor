@@ -4,6 +4,7 @@ import io
 import os
 from pathlib import Path
 import random
+import time
 from typing import Tuple, Optional
 
 import cv2
@@ -49,6 +50,11 @@ class Arguments(tap.Tap):
     exp_log_dir: str = "exp"
     run_log_dir: str = "run"
 
+    # WandB
+    wandb_enabled: bool = False
+    wandb_entity: str = None
+    wandb_project: str = "3dda"
+
     # Main training parameters
     num_workers: int = 1
     batch_size: int = 16
@@ -77,6 +83,9 @@ class Arguments(tap.Tap):
     relative_action: int = 0
     lang_enhanced: int = 0
     fps_subsampling_factor: int = 5
+
+    # only for debug
+    local_rank = None
 
 
 class TrainTester(BaseTrainTester):
@@ -182,6 +191,8 @@ class TrainTester(BaseTrainTester):
             sample["curr_gripper"] if self.args.num_history < 1
             else sample["curr_gripper_history"][:, -self.args.num_history:]
         )
+        # # Record start time
+        # start_time = time.time()
         out = model(
             sample["trajectory"],
             sample["trajectory_mask"],
@@ -190,6 +201,12 @@ class TrainTester(BaseTrainTester):
             sample["instr"],
             curr_gripper
         )
+        # # Record end time
+        # end_time = time.time()
+
+        # # Calculate and print execution time
+        # execution_time = end_time - start_time
+        # print(f"Execution time: {execution_time} seconds")
 
         # Backward pass
         loss = criterion.compute_loss(out)
@@ -200,13 +217,15 @@ class TrainTester(BaseTrainTester):
             optimizer.step()
 
         # Log
-        if dist.get_rank() == 0 and (step_id + 1) % self.args.val_freq == 0:
-            self.writer.add_scalar("lr", self.args.lr, step_id)
-            self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
-            self.logger({
-                "train/loss_noise_mse": loss,
-                "train/lr": self.args.lr,
-            }, commit=False)
+        if dist.get_rank() == 0:
+            if (step_id + 1) % self.args.val_freq == 0:
+                self.writer.add_scalar("lr", self.args.lr, step_id)
+                self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
+            if (step_id + 1) % (self.args.val_freq / 10) == 0:
+                self.logger.log({
+                    "train/loss_noise_mse": loss,
+                    "train/lr": self.args.lr,
+                }, commit=False, step=step_id)
 
     @torch.no_grad()
     def evaluate_nsteps(self, model, criterion, loader, step_id, val_iters,
@@ -282,14 +301,14 @@ class TrainTester(BaseTrainTester):
             if step_id > -1:
                 for key, val in values.items():
                     self.writer.add_scalar(key, val, step_id)
-                    self.logger({key: val}, commit=False)
+                    self.logger.log({key: val}, commit=False, step=step_id)
 
             # Also log to terminal
             print(f"Step {step_id}:")
             for key, value in values.items():
                 print(f"{key}: {value:.03f}")
 
-        return values.get('val-losses/traj_pos_acc_001', None)
+        return values.get(f'{split}-losses/mean/traj_pos_acc_001', None)
 
 
 def traj_collate_fn(batch):

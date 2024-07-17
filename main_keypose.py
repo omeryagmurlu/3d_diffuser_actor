@@ -222,10 +222,10 @@ class TrainTester(BaseTrainTester):
         if dist.get_rank() == 0 and (step_id + 1) % self.args.val_freq == 0:
             self.writer.add_scalar("lr", self.args.lr, step_id)
             self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
-            self.logger({
+            self.logger.log({
                 "train/loss_noise_mse": loss,
                 "train/lr": self.args.lr,
-            }, commit=False)
+            }, commit=False, step=step_id)
 
     @torch.no_grad()
     def evaluate_nsteps(self, model, criterion, loader, step_id, val_iters,
@@ -266,7 +266,7 @@ class TrainTester(BaseTrainTester):
         if dist.get_rank() == 0:
             for key, val in values.items():
                 self.writer.add_scalar(key, val, step_id)
-                self.logger({key: val}, commit=False)
+                self.logger.log({key: val}, commit=False, step=step_id)
 
             # Also log to terminal
             print(f"Step {step_id}:")

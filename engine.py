@@ -174,7 +174,8 @@ class BaseTrainTester:
                     split='train'
                 )
                 if dist.get_rank() == 0:
-                    self.logger.log({"eval_train/loss": new_loss}, commit=False)
+                    self.logger.log({"eval-train/loss": new_loss}, commit=False, step=step_id)
+                new_loss = None
                 print("Test evaluation.......")
                 model.eval()
                 new_loss = self.evaluate_nsteps(
@@ -185,7 +186,7 @@ class BaseTrainTester:
                     )
                 )
                 if dist.get_rank() == 0:
-                    self.logger.log({"eval_test/loss": new_loss}, commit=False)
+                    self.logger.log({"eval-test/loss": new_loss}, commit=False, step=step_id)
 
                 if dist.get_rank() == 0:  # save model
                     best_loss = self.save_checkpoint(
@@ -194,10 +195,8 @@ class BaseTrainTester:
                     )
                     if best_loss == new_loss:
                         self.logger.log_summary("best_loss", best_loss)
+                new_loss = None
                 model.train()
-
-            if dist.get_rank() == 0:
-                self.logger.log({})
 
         return model
 
