@@ -4,7 +4,6 @@ import io
 import os
 from pathlib import Path
 import random
-import time
 from typing import Tuple, Optional
 
 import cv2
@@ -191,8 +190,6 @@ class TrainTester(BaseTrainTester):
             sample["curr_gripper"] if self.args.num_history < 1
             else sample["curr_gripper_history"][:, -self.args.num_history:]
         )
-        # # Record start time
-        # start_time = time.time()
         out = model(
             sample["trajectory"],
             sample["trajectory_mask"],
@@ -201,12 +198,6 @@ class TrainTester(BaseTrainTester):
             sample["instr"],
             curr_gripper
         )
-        # # Record end time
-        # end_time = time.time()
-
-        # # Calculate and print execution time
-        # execution_time = end_time - start_time
-        # print(f"Execution time: {execution_time} seconds")
 
         # Backward pass
         loss = criterion.compute_loss(out)

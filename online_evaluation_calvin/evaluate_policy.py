@@ -33,7 +33,7 @@ from online_evaluation_calvin.evaluate_utils import get_env
 logger = logging.getLogger(__name__)
 
 EP_LEN = 60
-NUM_SEQUENCES = 1000
+NUM_SEQUENCES = 5
 EXECUTE_LEN = 20
 
 
@@ -110,9 +110,11 @@ def evaluate_policy(model, env, conf_dir, eval_log_dir=None, save_video=False,
 
     eval_sequences = get_sequences(NUM_SEQUENCES)
 
-    results, tested_sequence_indices = collect_results(eval_log_dir)
+    # results, tested_sequence_indices = collect_results(eval_log_dir)
+    results, tested_sequence_indices = [], []
 
     for seq_ind, (initial_state, eval_sequence) in enumerate(eval_sequences):
+        print(f"Sequence {seq_ind}")
         if sequence_indices and seq_ind not in sequence_indices:
             continue
         if seq_ind in tested_sequence_indices:
@@ -139,7 +141,7 @@ def evaluate_policy(model, env, conf_dir, eval_log_dir=None, save_video=False,
                     cv2.putText(img,
                                 f'{task_ind}: {subtask}',
                                 (10, 180),
-                                cv2.FONT_HERSHEY_SIMPLEX, 
+                                cv2.FONT_HERSHEY_SIMPLEX,
                                 0.5,
                                 (0, 0, 0),
                                 1,

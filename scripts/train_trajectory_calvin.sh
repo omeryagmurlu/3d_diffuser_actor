@@ -27,8 +27,9 @@ wandb_entity=omeryagmurlu
 run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
+export CUDA_VISIBLE_DEVICES=1,2,3
 
-CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=3,4,5 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
+CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     main_trajectory_calvin.py \
     --tasks A B C D\
     --backbone $backbone \

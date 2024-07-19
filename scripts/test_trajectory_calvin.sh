@@ -10,8 +10,8 @@ interpolation_length=20
 num_history=3
 diffusion_timesteps=25
 B=30
-C=192
-ngpus=6
+C=120
+ngpus=1
 backbone=clip
 image_size="256,256"
 relative_action=1
@@ -23,6 +23,7 @@ val_freq=5000
 quaternion_format=wxyz
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
+export CUDA_VISIBLE_DEVICES=1,2,3
 
 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     online_evaluation_calvin/evaluate_policy.py \
