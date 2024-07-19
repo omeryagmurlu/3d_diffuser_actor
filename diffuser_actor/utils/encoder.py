@@ -21,12 +21,14 @@ class Encoder(nn.Module):
                  nhist=3,
                  num_attn_heads=8,
                  num_vis_ins_attn_layers=2,
-                 fps_subsampling_factor=5):
+                 fps_subsampling_factor=5,
+                 use_pcd=True):
         super().__init__()
         assert backbone in ["resnet50", "resnet18", "clip"]
         assert image_size in [(128, 128), (256, 256)]
         assert num_sampling_level in [1, 2, 3, 4]
 
+        self.use_pcd = use_pcd
         self.image_size = image_size
         self.num_sampling_level = num_sampling_level
         self.fps_subsampling_factor = fps_subsampling_factor
@@ -173,6 +175,9 @@ class Encoder(nn.Module):
             - pcd_pyramid: [(B, ncam * H_i * W_i, 3)]
         """
         num_cameras = rgb.shape[1]
+
+        if not self.use_pcd:
+            pcd = torch.zeros_like(rgb)
 
         # Pass each view independently through backbone
         rgb = einops.rearrange(rgb, "bt ncam c h w -> (bt ncam) c h w")

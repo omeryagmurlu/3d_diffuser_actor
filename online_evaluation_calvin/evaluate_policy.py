@@ -73,6 +73,7 @@ class Arguments(tap.Tap):
     fps_subsampling_factor: int = 3
     num_history: int = 0
     interpolation_length: int = 2 # the number of steps to reach keypose
+    use_pcd: int = 1
 
 
 def make_env(dataset_path, show_gui=True, split="validation", scene=None):

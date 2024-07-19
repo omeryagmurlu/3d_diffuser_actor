@@ -33,6 +33,7 @@ class DiffuserActor(nn.Module):
                  num_vis_ins_attn_layers=2,
                  use_instruction=False,
                  fps_subsampling_factor=5,
+                 use_pcd=True,
                  gripper_loc_bounds=None,
                  rotation_parametrization='6D',
                  quaternion_format='xyzw',
@@ -52,7 +53,8 @@ class DiffuserActor(nn.Module):
             num_sampling_level=1,
             nhist=nhist,
             num_vis_ins_attn_layers=num_vis_ins_attn_layers,
-            fps_subsampling_factor=fps_subsampling_factor
+            fps_subsampling_factor=fps_subsampling_factor,
+            use_pcd=use_pcd
         )
         self.prediction_head = DiffusionHead(
             embedding_dim=embedding_dim,

@@ -16,6 +16,11 @@ from utils.common_utils import (
     load_instructions, get_gripper_loc_bounds
 )
 
+# def custom_repr(self):
+#     return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
+
+# original_repr = torch.Tensor.__repr__
+# torch.Tensor.__repr__ = custom_repr
 
 def load_instructions(instructions, split):
     instructions = pickle.load(

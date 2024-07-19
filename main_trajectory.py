@@ -82,6 +82,7 @@ class Arguments(tap.Tap):
     relative_action: int = 0
     lang_enhanced: int = 0
     fps_subsampling_factor: int = 5
+    use_pcd: int = 1
 
     # only for debug
     local_rank = None
@@ -156,6 +157,7 @@ class TrainTester(BaseTrainTester):
             embedding_dim=self.args.embedding_dim,
             num_vis_ins_attn_layers=self.args.num_vis_ins_attn_layers,
             use_instruction=bool(self.args.use_instruction),
+            use_pcd=bool(self.args.use_pcd),
             fps_subsampling_factor=self.args.fps_subsampling_factor,
             gripper_loc_bounds=self.args.gripper_loc_bounds,
             rotation_parametrization=self.args.rotation_parametrization,

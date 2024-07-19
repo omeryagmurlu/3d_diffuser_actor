@@ -14,9 +14,9 @@
               "CUDA_LAUNCH_BLOCKING": "1",
               "CUDA_VISIBLE_DEVICES": "1,2,3"
             },
-            "justMyCode": false,
+            // "justMyCode": false,
             "args": [
-                "--nproc_per_node", "2",
+                "--nproc_per_node", "1",
                 "--master_port", "6231",
                 "main_trajectory_calvin.py",
               "--tasks", "A", "B", "C", "D",
@@ -29,7 +29,7 @@
               "--image_size", "256,256",
               "--num_workers", "4",
               "--max_episode_length", "30",
-              "--train_iters", "600000",
+              "--train_iters", "60",
               "--embedding_dim", "96",
               "--use_instruction", "1",
               "--rotation_parametrization", "6D",
@@ -55,6 +55,7 @@
               "--lang_enhanced", "1",
               "--quaternion_format", "wxyz",
               "--run_log_dir", "test",
+              "--use_pcd", "1",
             ]
           }
     ]

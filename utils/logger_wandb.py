@@ -7,6 +7,7 @@ class WandBLogger():
             project=args.wandb_project,
             entity=args.wandb_entity,
             config=args,
+            name=args.run_log_dir,
             # dir=args.wandb_dir,
         )
 

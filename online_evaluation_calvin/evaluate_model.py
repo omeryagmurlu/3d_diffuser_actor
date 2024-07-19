@@ -46,6 +46,7 @@ class DiffusionModel(CalvinBaseModel):
             num_vis_ins_attn_layers=self.args.num_vis_ins_attn_layers,
             use_instruction=bool(self.args.use_instruction),
             fps_subsampling_factor=self.args.fps_subsampling_factor,
+            use_pcd=bool(self.args.use_pcd),
             gripper_loc_bounds=self.args.gripper_loc_bounds,
             rotation_parametrization=self.args.rotation_parametrization,
             quaternion_format=self.args.quaternion_format,
@@ -88,7 +89,7 @@ class DiffusionModel(CalvinBaseModel):
         tokenizer.model_max_length = self.args.text_max_length
 
         model = load_model(self.args.text_encoder)
-    
+
         return tokenizer, model
 
     def reset(self):
@@ -117,7 +118,7 @@ class DiffusionModel(CalvinBaseModel):
         Args:
             instruction: a string of instruction
             device: a string of device
-        
+
         Returns:
             pred: a tensor of latent embeddings of shape (text_max_length, 512)
         """
