@@ -3,6 +3,7 @@
 import os
 import pickle
 import random
+import gc
 
 import numpy as np
 import torch
@@ -163,39 +164,49 @@ class BaseTrainTester:
 
             self.train_one_step(model, criterion, optimizer, step_id, sample)
             if (step_id + 1) % self.args.val_freq == 0:
-                print("Train evaluation.......")
-                model.eval()
-                new_loss = self.evaluate_nsteps(
-                    model, criterion, train_loader, step_id,
-                    val_iters=max(
-                        5,
-                        int(4 * len(self.args.tasks)/self.args.batch_size_val)
-                    ),
-                    split='train'
-                )
-                if dist.get_rank() == 0:
-                    self.logger.log({"eval-train/loss": new_loss}, commit=False, step=step_id)
-                new_loss = None
-                print("Test evaluation.......")
-                model.eval()
-                new_loss = self.evaluate_nsteps(
-                    model, criterion, test_loader, step_id,
-                    val_iters=max(
-                        5,
-                        int(4 * len(self.args.tasks)/self.args.batch_size_val)
-                    )
-                )
-                if dist.get_rank() == 0:
-                    self.logger.log({"eval-test/loss": new_loss}, commit=False, step=step_id)
+                with torch.no_grad():
+                    # Let's try freeing memory, we oom here everytime... I'm not sure if this'll work
+                    del sample
+                    gc.collect()
+                    torch.cuda.empty_cache()
 
-                if dist.get_rank() == 0:  # save model
-                    best_loss = self.save_checkpoint(
-                        model, optimizer, step_id,
-                        new_loss, best_loss
+                    print("Train evaluation.......")
+                    model.eval()
+                    new_loss = self.evaluate_nsteps(
+                        model, criterion, train_loader, step_id,
+                        val_iters=max(
+                            5,
+                            int(4 * len(self.args.tasks)/self.args.batch_size_val)
+                        ),
+                        split='train'
                     )
-                    if best_loss == new_loss:
-                        self.logger.log_summary("best_loss", best_loss)
-                new_loss = None
+                    if dist.get_rank() == 0:
+                        self.logger.log({"eval-train/loss": new_loss}, commit=False, step=step_id)
+                    new_loss = None
+                    print("Test evaluation.......")
+                    model.eval()
+                    new_loss = self.evaluate_nsteps(
+                        model, criterion, test_loader, step_id,
+                        val_iters=max(
+                            5,
+                            int(4 * len(self.args.tasks)/self.args.batch_size_val)
+                        )
+                    )
+                    if dist.get_rank() == 0:
+                        self.logger.log({"eval-test/loss": new_loss}, commit=False, step=step_id)
+
+                    if dist.get_rank() == 0:  # save model
+                        best_loss = self.save_checkpoint(
+                            model, optimizer, step_id,
+                            new_loss, best_loss
+                        )
+                        if best_loss == new_loss:
+                            self.logger.log_summary("best_loss", best_loss)
+
+                    del new_loss
+                    gc.collect()
+                    torch.cuda.empty_cache()
+
                 model.train()
 
         return model

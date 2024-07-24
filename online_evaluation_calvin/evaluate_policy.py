@@ -33,7 +33,7 @@ from online_evaluation_calvin.evaluate_utils import get_env
 logger = logging.getLogger(__name__)
 
 EP_LEN = 60
-NUM_SEQUENCES = 5
+NUM_SEQUENCES = 100
 EXECUTE_LEN = 20
 
 

@@ -11,7 +11,7 @@ num_history=3
 diffusion_timesteps=25
 B=30
 C=168
-ngpus=4
+ngpus=5
 backbone=clip
 image_size="256,256"
 relative_action=1
@@ -23,7 +23,7 @@ val_freq=5000
 quaternion_format=wxyz
 
 train_iters=100000
-use_pcd=1
+use_pcd=0
 
 wandb_entity=omeryagmurlu
 
@@ -31,7 +31,7 @@ run_log_dir=$(date -Iseconds -u)-use_pcd:$use_pcd
 # run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
-export CUDA_VISIBLE_DEVICES=1,2,3,4
+export CUDA_VISIBLE_DEVICES=1,2,3,4,5
 
 CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     main_trajectory_calvin.py \
