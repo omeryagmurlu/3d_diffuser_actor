@@ -18,6 +18,14 @@ from tqdm import trange
 from utils.logger_nope import NopeLogger
 
 
+if os.environ.get("DEBUG", "false") == "true":
+    def custom_repr(self):
+        return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
+
+    original_repr = torch.Tensor.__repr__
+    torch.Tensor.__repr__ = custom_repr
+
+
 class BaseTrainTester:
     """Basic train/test class to be inherited."""
 

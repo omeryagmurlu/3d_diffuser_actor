@@ -13,6 +13,7 @@ from diffuser_actor.utils.encoder import Encoder
 from diffuser_actor.utils.layers import ParallelAttention
 from diffuser_actor.utils.position_encodings import (
     RotaryPositionEncoding3D,
+    RotaryPositionEncoding2D,
     SinusoidalPosEmb
 )
 from diffuser_actor.utils.utils import (
@@ -426,6 +427,7 @@ class DiffusionHead(nn.Module):
         # Encoders
         self.traj_encoder = nn.Linear(9, embedding_dim)
         self.relative_pe_layer = RotaryPositionEncoding3D(embedding_dim)
+        self.relative_pe_layer_2D = RotaryPositionEncoding2D(embedding_dim)
         self.time_emb = nn.Sequential(
             SinusoidalPosEmb(embedding_dim),
             nn.Linear(embedding_dim, embedding_dim),
