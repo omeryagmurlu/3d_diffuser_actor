@@ -88,7 +88,22 @@ class DiffuserActor(nn.Module):
             rgb_feats_pyramid[0],
             "b ncam c h w -> b (ncam h w) c"
         )
-        context = pcd_pyramid[0]
+        if visible_pcd is not None:
+            context = pcd_pyramid[0]
+        else:
+            bsize = visible_rgb.size(0)
+            ncam = visible_rgb.size(1)
+            h = 20
+            w = 20
+            context = torch.zeros([bsize, ncam, h, w, 2], device=visible_rgb.device)
+            context[..., 0], context[..., 1] = torch.meshgrid(
+                torch.linspace(-1, 1, h, device=visible_rgb.device),
+                torch.linspace(-1, 1, w, device=visible_rgb.device),
+                indexing='xy'
+            )
+            context = einops.rearrange(context, 'b ncam h w c -> b (ncam h w) c')
+            # FIXME 2d xy grid from 0 0 to ? ? ? -1 to 1 maybe
+            # there doesn't seem to be a coord normalization in context
 
         # Encode instruction (B, 53, F)
         instr_feats = None
@@ -107,10 +122,15 @@ class DiffuserActor(nn.Module):
             curr_gripper, context_feats, context
         )
 
+        if context.shape[-1] == 2:
+            context_pos = self.encoder.relative_pe_layer_2d(context)
+        else:
+            context_pos = self.encoder.relative_pe_layer(context)
+
         # FPS on visual features (N, B, F) and (B, N, F, 2)
         fps_feats, fps_pos = self.encoder.run_fps(
             context_feats.transpose(0, 1),
-            self.encoder.relative_pe_layer(context)
+            context_pos
         )
         return (
             context_feats, context,  # contextualized visual features
@@ -193,21 +213,29 @@ class DiffuserActor(nn.Module):
         rgb_obs,
         pcd_obs,
         instruction,
-        curr_gripper
+        curr_gripper,
+        sample_type="3d"
     ):
-        # Normalize all pos
-        pcd_obs = pcd_obs.clone()
         curr_gripper = curr_gripper.clone()
-        pcd_obs = torch.permute(self.normalize_pos(
-            torch.permute(pcd_obs, [0, 1, 3, 4, 2])
-        ), [0, 1, 4, 2, 3])
         curr_gripper[..., :3] = self.normalize_pos(curr_gripper[..., :3])
         curr_gripper = self.convert_rot(curr_gripper)
 
-        # Prepare inputs
-        fixed_inputs = self.encode_inputs(
-            rgb_obs, pcd_obs, instruction, curr_gripper
-        )
+        if sample_type == "3d":
+            pcd_obs = pcd_obs.clone()
+            pcd_obs = torch.permute(self.normalize_pos(
+                torch.permute(pcd_obs, [0, 1, 3, 4, 2])
+            ), [0, 1, 4, 2, 3])
+
+            # Prepare inputs
+            fixed_inputs = self.encode_inputs(
+                rgb_obs, pcd_obs, instruction, curr_gripper
+            )
+        elif sample_type == "2d":
+            fixed_inputs = self.encode_inputs(
+                rgb_obs, None, instruction, curr_gripper
+            )
+        else:
+            raise ValueError("Invalid sample type.")
 
         # Condition on start-end pose
         B, nhist, D = curr_gripper.shape
@@ -306,7 +334,8 @@ class DiffuserActor(nn.Module):
         pcd_obs,
         instruction,
         curr_gripper,
-        run_inference=False
+        run_inference=False,
+        sample_type="3d"
     ):
         """
         Arguments:
@@ -337,26 +366,37 @@ class DiffuserActor(nn.Module):
                 rgb_obs,
                 pcd_obs,
                 instruction,
-                curr_gripper
+                curr_gripper,
+                sample_type=sample_type
             )
         # Normalize all pos
         gt_trajectory = gt_trajectory.clone()
-        pcd_obs = pcd_obs.clone()
-        curr_gripper = curr_gripper.clone()
         gt_trajectory[:, :, :3] = self.normalize_pos(gt_trajectory[:, :, :3])
-        pcd_obs = torch.permute(self.normalize_pos(
-            torch.permute(pcd_obs, [0, 1, 3, 4, 2])
-        ), [0, 1, 4, 2, 3])
+        # Convert rotation parametrization
+        gt_trajectory = self.convert_rot(gt_trajectory)
+
+        curr_gripper = curr_gripper.clone()
         curr_gripper[..., :3] = self.normalize_pos(curr_gripper[..., :3])
 
         # Convert rotation parametrization
-        gt_trajectory = self.convert_rot(gt_trajectory)
         curr_gripper = self.convert_rot(curr_gripper)
 
-        # Prepare inputs
-        fixed_inputs = self.encode_inputs(
-            rgb_obs, pcd_obs, instruction, curr_gripper
-        )
+        if sample_type == "3d":
+            pcd_obs = pcd_obs.clone()
+            pcd_obs = torch.permute(self.normalize_pos(
+                torch.permute(pcd_obs, [0, 1, 3, 4, 2])
+            ), [0, 1, 4, 2, 3])
+
+            # Prepare inputs
+            fixed_inputs = self.encode_inputs(
+                rgb_obs, pcd_obs, instruction, curr_gripper
+            )
+        elif sample_type == "2d":
+            fixed_inputs = self.encode_inputs(
+                rgb_obs, None, instruction, curr_gripper
+            )
+        else:
+            raise ValueError("Invalid sample type.")
 
         # Condition on start-end pose
         cond_data = torch.zeros_like(gt_trajectory)
@@ -427,7 +467,7 @@ class DiffusionHead(nn.Module):
         # Encoders
         self.traj_encoder = nn.Linear(9, embedding_dim)
         self.relative_pe_layer = RotaryPositionEncoding3D(embedding_dim)
-        self.relative_pe_layer_2D = RotaryPositionEncoding2D(embedding_dim)
+        self.relative_pe_layer_2d = RotaryPositionEncoding2D(embedding_dim)
         self.time_emb = nn.Sequential(
             SinusoidalPosEmb(embedding_dim),
             nn.Linear(embedding_dim, embedding_dim),
@@ -557,7 +597,7 @@ class DiffusionHead(nn.Module):
 
     def prediction_head(self,
                         gripper_pcd, gripper_features,
-                        context_pcd, context_features,
+                        context, context_features,
                         timesteps, curr_gripper_features,
                         sampled_context_features, sampled_rel_context_pos,
                         instr_feats):
@@ -567,7 +607,7 @@ class DiffusionHead(nn.Module):
         Args:
             gripper_pcd: A tensor of shape (B, N, 3)
             gripper_features: A tensor of shape (N, B, F)
-            context_pcd: A tensor of shape (B, N, 3)
+            context: A tensor of shape (B, N, 3) or (B, N, 2)
             context_features: A tensor of shape (N, B, F)
             timesteps: A tensor of shape (B,) indicating the diffusion step
             curr_gripper_features: A tensor of shape (M, B, F)
@@ -582,7 +622,11 @@ class DiffusionHead(nn.Module):
 
         # Positional embeddings
         rel_gripper_pos = self.relative_pe_layer(gripper_pcd)
-        rel_context_pos = self.relative_pe_layer(context_pcd)
+        if context.shape[-1] == 2:
+            rel_context_pos = self.relative_pe_layer_2d(context)
+        else:
+            rel_context_pos = self.relative_pe_layer(context)
+
 
         # Cross attention from gripper to full context
         gripper_features = self.cross_attn(

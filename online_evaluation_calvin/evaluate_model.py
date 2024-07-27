@@ -177,7 +177,8 @@ class DiffusionModel(CalvinBaseModel):
             pcds.float(),
             instruction.float(),
             curr_gripper=gripper[..., :7].float(),
-            run_inference=True
+            run_inference=True,
+            sample_type=self.args.sample_type
         )
 
         # Convert quaternion to Euler angles

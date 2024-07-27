@@ -57,6 +57,8 @@
               "--quaternion_format", "wxyz",
               "--run_log_dir", "test",
               "--use_pcd", "1",
+              "--sample_type_2d", "1",
+              "--sample_type_2d_every_nth", "2",
             ]
           }
     ]

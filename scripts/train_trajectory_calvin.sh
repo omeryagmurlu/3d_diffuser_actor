@@ -23,11 +23,11 @@ val_freq=5000
 quaternion_format=wxyz
 
 train_iters=100000
-use_pcd=0
+use_pcd=1
 
 wandb_entity=omeryagmurlu
 
-run_log_dir=$(date -Iseconds -u)-use_pcd:$use_pcd
+run_log_dir=$(date -Iseconds -u)-sample2devery2nd
 # run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
@@ -73,7 +73,9 @@ CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --run_log_dir $run_log_dir \
     --wandb_enabled \
     --wandb_entity $wandb_entity \
-    --use_pcd $use_pcd
+    --use_pcd $use_pcd \
+    --sample_type_2d 1 \
+    --sample_type_2d_every_nth 2
 
 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     online_evaluation_calvin/evaluate_policy.py \
@@ -100,4 +102,5 @@ torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --base_log_dir train_logs/${main_dir}/${run_log_dir}/eval_logs/ \
     --quaternion_format $quaternion_format \
     --checkpoint train_logs/${main_dir}/${run_log_dir}/last.pth \
-    --use_pcd $use_pcd
+    --use_pcd $use_pcd \
+    --sample_type 3d

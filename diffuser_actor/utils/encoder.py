@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import functional as F
 from torchvision.ops import FeaturePyramidNetwork
 
-from .position_encodings import RotaryPositionEncoding3D
+from .position_encodings import RotaryPositionEncoding3D, RotaryPositionEncoding2D
 from .layers import FFWRelativeCrossAttentionModule, ParallelAttention
 from .resnet import load_resnet50, load_resnet18
 from .clip import load_clip
@@ -64,6 +64,7 @@ class Encoder(nn.Module):
 
         # 3D relative positional embeddings
         self.relative_pe_layer = RotaryPositionEncoding3D(embedding_dim)
+        self.relative_pe_layer_2d = RotaryPositionEncoding2D(embedding_dim)
 
         # Current gripper learnable features
         self.curr_gripper_embed = nn.Embedding(nhist, embedding_dim)
@@ -144,7 +145,11 @@ class Encoder(nn.Module):
 
         # Rotary positional encoding
         gripper_pos = self.relative_pe_layer(gripper[..., :3])
-        context_pos = self.relative_pe_layer(context)
+        if context.shape[-1] == 2:
+            context_pos = self.relative_pe_layer_2d(context)
+        else:
+            context_pos = self.relative_pe_layer(context)
+
 
         gripper_feats = einops.rearrange(
             gripper_feats, 'b npt c -> npt b c'
@@ -176,9 +181,6 @@ class Encoder(nn.Module):
         """
         num_cameras = rgb.shape[1]
 
-        if not self.use_pcd:
-            pcd = torch.zeros_like(rgb)
-
         # Pass each view independently through backbone
         rgb = einops.rearrange(rgb, "bt ncam c h w -> (bt ncam) c h w")
         rgb = self.normalize(rgb)
@@ -187,36 +189,44 @@ class Encoder(nn.Module):
         # Pass visual features through feature pyramid network
         rgb_features = self.feature_pyramid(rgb_features)
 
-        # Treat different cameras separately
-        pcd = einops.rearrange(pcd, "bt ncam c h w -> (bt ncam) c h w")
+        if pcd is not None:
+            if not self.use_pcd:
+                pcd = torch.zeros_like(rgb)
+            # Treat different cameras separately
+            pcd = einops.rearrange(pcd, "bt ncam c h w -> (bt ncam) c h w")
 
         rgb_feats_pyramid = []
-        pcd_pyramid = []
+        if pcd is not None:
+            pcd_pyramid = []
+        else:
+            pcd_pyramid = None
         for i in range(self.num_sampling_level):
             # Isolate level's visual features
             rgb_features_i = rgb_features[self.feature_map_pyramid[i]]
 
-            # Interpolate xy-depth to get the locations for this level
-            feat_h, feat_w = rgb_features_i.shape[-2:]
-            pcd_i = F.interpolate(
-                pcd,
-                (feat_h, feat_w),
-                mode='bilinear'
-            )
+            if pcd is not None:
+                # Interpolate xy-depth to get the locations for this level
+                feat_h, feat_w = rgb_features_i.shape[-2:]
+                pcd_i = F.interpolate(
+                    pcd,
+                    (feat_h, feat_w),
+                    mode='bilinear'
+                )
 
-            # Merge different cameras for clouds, separate for rgb features
-            h, w = pcd_i.shape[-2:]
-            pcd_i = einops.rearrange(
-                pcd_i,
-                "(bt ncam) c h w -> bt (ncam h w) c", ncam=num_cameras
-            )
+                # Merge different cameras for clouds, separate for rgb features
+                h, w = pcd_i.shape[-2:]
+                pcd_i = einops.rearrange(
+                    pcd_i,
+                    "(bt ncam) c h w -> bt (ncam h w) c", ncam=num_cameras
+                )
             rgb_features_i = einops.rearrange(
                 rgb_features_i,
                 "(bt ncam) c h w -> bt ncam c h w", ncam=num_cameras
             )
 
             rgb_feats_pyramid.append(rgb_features_i)
-            pcd_pyramid.append(pcd_i)
+            if pcd is not None:
+                pcd_pyramid.append(pcd_i)
 
         return rgb_feats_pyramid, pcd_pyramid
 

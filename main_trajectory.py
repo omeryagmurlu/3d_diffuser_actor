@@ -84,6 +84,9 @@ class Arguments(tap.Tap):
     fps_subsampling_factor: int = 5
     use_pcd: int = 1
 
+    sample_type_2d_every_nth: int = 1
+    sample_type_2d: int = 0
+
     # only for debug
     local_rank = None
 
@@ -192,13 +195,20 @@ class TrainTester(BaseTrainTester):
             sample["curr_gripper"] if self.args.num_history < 1
             else sample["curr_gripper_history"][:, -self.args.num_history:]
         )
+
+        if self.args.sample_type_2d and step_id % self.args.sample_type_2d_every_nth == 0:
+            sample_type = "2d"
+        else:
+            sample_type = "3d"
+
         out = model(
             sample["trajectory"],
             sample["trajectory_mask"],
             sample["rgbs"],
             sample["pcds"],
             sample["instr"],
-            curr_gripper
+            curr_gripper,
+            sample_type = sample_type
         )
 
         # Backward pass
@@ -245,6 +255,12 @@ class TrainTester(BaseTrainTester):
                 sample["curr_gripper"] if self.args.num_history < 1
                 else sample["curr_gripper_history"][:, -self.args.num_history:]
             )
+
+            if self.args.sample_type_2d and step_id % self.args.sample_type_2d_every_nth == 0:
+                sample_type = "2d"
+            else:
+                sample_type = "3d"
+
             action = model(
                 sample["trajectory"].to(device),
                 sample["trajectory_mask"].to(device),
@@ -252,7 +268,8 @@ class TrainTester(BaseTrainTester):
                 sample["pcds"].to(device),
                 sample["instr"].to(device),
                 curr_gripper.to(device),
-                run_inference=True
+                run_inference=True,
+                sample_type = sample_type
             )
             losses, losses_B = criterion.compute_metrics(
                 action,
@@ -312,7 +329,7 @@ def traj_collate_fn(batch):
     ]
     ret_dict = {
         key: torch.cat([
-            item[key].float() if key != 'trajectory_mask' else item[key]
+            item[key].float() if (key != 'trajectory_mask' and key != 'sample_type') else item[key]
             for item in batch
         ]) for key in keys
     }
