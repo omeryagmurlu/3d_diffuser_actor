@@ -78,6 +78,9 @@ class Arguments(tap.Tap):
     lang_enhanced: int = 0
     fps_subsampling_factor: int = 5
 
+    # Debugging
+    local_rank: int = None # with torchrun, this is set automatically via env var
+
 
 class TrainTester(BaseTrainTester):
     """Train/test a trajectory optimization algorithm."""

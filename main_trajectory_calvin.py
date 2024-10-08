@@ -186,7 +186,16 @@ if __name__ == '__main__':
         os.environ.get("CUDA_VISIBLE_DEVICES")
     )
     print("Device count", torch.cuda.device_count())
-    args.local_rank = int(os.environ["LOCAL_RANK"])
+    if args.local_rank is None:
+        args.local_rank = int(os.environ["LOCAL_RANK"])
+    else:
+        import torch
+        print("Debugging...")
+        def custom_repr(self):
+            return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
+
+        original_repr = torch.Tensor.__repr__
+        torch.Tensor.__repr__ = custom_repr
 
     # Seeds
     torch.manual_seed(args.seed)

@@ -1,0 +1,58 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug train_trajectory_calvin_nohistory.sh",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "torch.distributed.launch",
+            "args": [
+                "--nproc_per_node", "1",
+                "--use_env",
+                "${workspaceFolder}/main_trajectory_calvin.py",
+                "--local_rank", "0",
+                "--batch_size", "16", // 5 corresponds to 9gig, 30 for norm, so 54 for 30
+                "--train_iters", "30",
+                "--embedding_dim", "24",
+                "--image_size", "256,256",
+
+                "--tasks", "A", "B", "C", "D",
+                "--backbone", "clip",
+                "--dataset", "./data/calvin/packaged_debug/training",
+                "--valset", "./data/calvin/packaged_debug/validation",
+                "--instructions", "instructions/calvin_task_debug_D/",
+                "--gripper_loc_bounds", "tasks/calvin_rel_traj_location_bounds_task_ABC_D.json",
+                "--gripper_loc_bounds_buffer", "0.01",
+                "--num_workers", "4",
+                "--max_episode_length", "30",
+                "--use_instruction", "1",
+                "--rotation_parametrization", "6D",
+                "--diffusion_timesteps", "25",
+                "--val_freq", "5000",
+                "--val_iters", "2",
+                "--dense_interpolation", "1",
+                "--interpolation_length", "20",
+                "--exp_log_dir", "debug",
+                "--batch_size_val", "3",
+                "--cache_size", "0",
+                "--cache_size_val", "0",
+                "--keypose_only", "0",
+                "--variations", "0",
+                "--lr", "3e-3",
+                "--wd", "5e-3",
+                "--num_history", "1",
+                "--cameras", "front", "wrist",
+                "--max_episodes_per_task", "-1",
+                "--relative_action", "1",
+                "--fps_subsampling_factor", "3",
+                "--lang_enhanced", "1",
+                "--quaternion_format", "wxyz",
+                "--run_log_dir", "debug"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
+                "CUDA_LAUNCH_BLOCKING": "1"
+            }
+        }
+    ]
+}
