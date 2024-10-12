@@ -192,7 +192,7 @@ if __name__ == '__main__':
         import torch
         print("Debugging...")
         def custom_repr(self):
-            return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
+            return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)} {{Tensor:{tuple(self.shape)}}}'
 
         original_repr = torch.Tensor.__repr__
         torch.Tensor.__repr__ = custom_repr

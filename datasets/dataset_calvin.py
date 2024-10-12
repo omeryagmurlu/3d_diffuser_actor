@@ -242,6 +242,9 @@ class CalvinDataset(RLBenchDataset):
                 traj[..., 6:]
             ], dim=-1)
 
+        # assert that all elements of episode[6] are the same
+        assert all(anno == episode[6][0] for anno in episode[6])
+
         ret_dict = {
             "task": [task for _ in frame_ids],
             "rgbs": rgbs,  # e.g. tensor (n_frames, n_cam, 3+1, H, W)
@@ -249,7 +252,8 @@ class CalvinDataset(RLBenchDataset):
             "action": action,  # e.g. tensor (n_frames, 8), target pose
             "instr": instr,  # a (n_frames, 53, 512) tensor
             "curr_gripper": gripper,
-            "curr_gripper_history": gripper_history
+            "curr_gripper_history": gripper_history,
+            "annotation_id": [episode[6][0] for _ in frame_ids],
         }
         if self._return_low_lvl_trajectory:
             ret_dict.update({

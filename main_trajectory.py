@@ -81,6 +81,9 @@ class Arguments(tap.Tap):
     # Debugging
     local_rank: int = None # with torchrun, this is set automatically via env var
 
+    # Input mode
+    input_mode: str = '3donly'  # one of '2donly', '3donly', '2d_3d_mix'
+
 
 class TrainTester(BaseTrainTester):
     """Train/test a trajectory optimization algorithm."""
@@ -168,6 +171,20 @@ class TrainTester(BaseTrainTester):
     def get_criterion():
         return TrajectoryCriterion()
 
+    def has_3d(self, sample):
+        if self.args.input_mode == '2donly':
+            has_3d = torch.zeros_like(sample["annotation_id"])
+            sample["pcds"] = torch.zeros_like(sample["pcds"])
+        elif self.args.input_mode == '3donly':
+            has_3d = torch.ones_like(sample["annotation_id"])
+        elif self.args.input_mode == '2d3dmix':
+            has_3d = sample["annotation_id"] % 2 != 0
+            sample["pcds"][~has_3d] = 0
+        else:
+            raise ValueError(f"Unknown input mode: {self.args.input_mode}")
+
+        return sample, has_3d
+
     def train_one_step(self, model, criterion, optimizer, step_id, sample):
         """Run a single training step."""
         if step_id % self.args.accumulate_grad_batches == 0:
@@ -180,6 +197,8 @@ class TrainTester(BaseTrainTester):
             sample["trajectory"] = sample["trajectory"][:, 1:]
             sample["trajectory_mask"] = sample["trajectory_mask"][:, 1:]
 
+        sample, has_3d = self.has_3d(sample)
+
         # Forward pass
         curr_gripper = (
             sample["curr_gripper"] if self.args.num_history < 1
@@ -191,7 +210,8 @@ class TrainTester(BaseTrainTester):
             sample["rgbs"],
             sample["pcds"],
             sample["instr"],
-            curr_gripper
+            curr_gripper,
+            has_3d
         )
 
         # Backward pass
@@ -204,6 +224,7 @@ class TrainTester(BaseTrainTester):
 
         # Log
         if dist.get_rank() == 0 and (step_id + 1) % self.args.val_freq == 0:
+            self.writer.add_scalar("train-loss/2d3dmix", has_3d.float().mean(), step_id)
             self.writer.add_scalar("lr", self.args.lr, step_id)
             self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
 
@@ -232,6 +253,9 @@ class TrainTester(BaseTrainTester):
                 sample["curr_gripper"] if self.args.num_history < 1
                 else sample["curr_gripper_history"][:, -self.args.num_history:]
             )
+
+            sample, has_3d = self.has_3d(sample)
+
             action = model(
                 sample["trajectory"].to(device),
                 sample["trajectory_mask"].to(device),
@@ -239,12 +263,14 @@ class TrainTester(BaseTrainTester):
                 sample["pcds"].to(device),
                 sample["instr"].to(device),
                 curr_gripper.to(device),
+                has_3d.to(device),
                 run_inference=True
             )
             losses, losses_B = criterion.compute_metrics(
                 action,
                 sample["trajectory"].to(device),
-                sample["trajectory_mask"].to(device)
+                sample["trajectory_mask"].to(device),
+                has_3d.to(device)
             )
 
             # Gather global statistics
@@ -304,6 +330,7 @@ def traj_collate_fn(batch):
     }
 
     ret_dict["task"] = []
+    ret_dict["annotation_id"] = torch.cat([torch.tensor(item['annotation_id']) for item in batch])
     for item in batch:
         ret_dict["task"] += item['task']
     return ret_dict
@@ -321,7 +348,7 @@ class TrajectoryCriterion:
         return pred
 
     @staticmethod
-    def compute_metrics(pred, gt, mask):
+    def compute_metrics(pred, gt, mask, has_3d):
         # pred/gt are (B, L, 7), mask (B, L)
         pos_l2 = ((pred[..., :3] - gt[..., :3]) ** 2).sum(-1).sqrt()
         # symmetric quaternion eval
@@ -365,6 +392,14 @@ class TrajectoryCriterion:
             'pos_l2_final<0.01': (pos_l2 < 0.01).float(),
             'rot_l1': quat_l1,
             'rot_l1<0.025': (quat_l1 < 0.025).float(),
+        })
+
+        # general metrics
+        ret_1.update({
+            'has_3d': has_3d.float().mean()
+        })
+        ret_2.update({
+            'has_3d': has_3d.float()
         })
 
         return ret_1, ret_2

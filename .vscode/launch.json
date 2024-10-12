@@ -28,8 +28,8 @@
                 "--use_instruction", "1",
                 "--rotation_parametrization", "6D",
                 "--diffusion_timesteps", "25",
-                "--val_freq", "5000",
-                "--val_iters", "2",
+                "--val_freq", "5",
+                "--val_iters", "1",
                 "--dense_interpolation", "1",
                 "--interpolation_length", "20",
                 "--exp_log_dir", "debug",
@@ -47,11 +47,32 @@
                 "--fps_subsampling_factor", "3",
                 "--lang_enhanced", "1",
                 "--quaternion_format", "wxyz",
-                "--run_log_dir", "debug"
+                "--run_log_dir", "${input:shortDate}",
+                // "--input_mode", "2d3dmix"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
                 "CUDA_LAUNCH_BLOCKING": "1"
+            }
+        }
+    ],
+    "inputs": [
+        {
+        "id": "shortDate",
+        "type": "command",
+        "command": "extension.commandvariable.dateTime",
+            "args": {
+                "locale": "en-US",
+                "options": {
+                    "year": "numeric",
+                    "month": "2-digit",
+                    "day": "2-digit",
+                    "hour12": false,
+                    "hour": "2-digit",
+                    "minute": "2-digit",
+                    "second": "2-digit"
+                },
+                "template": "${year}-${month}-${day}-${hour}-${minute}-${second}"
             }
         }
     ]

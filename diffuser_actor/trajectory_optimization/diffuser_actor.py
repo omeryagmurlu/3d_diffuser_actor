@@ -116,7 +116,7 @@ class DiffuserActor(nn.Module):
             fps_feats, fps_pos  # sampled visual features
         )
 
-    def policy_forward_pass(self, trajectory, timestep, fixed_inputs):
+    def policy_forward_pass(self, trajectory, timestep, fixed_inputs, has_3d):
         # Parse inputs
         (
             context_feats,
@@ -135,10 +135,11 @@ class DiffuserActor(nn.Module):
             instr_feats=instr_feats,
             adaln_gripper_feats=adaln_gripper_feats,
             fps_feats=fps_feats,
-            fps_pos=fps_pos
+            fps_pos=fps_pos,
+            has_3d=has_3d
         )
 
-    def conditional_sample(self, condition_data, condition_mask, fixed_inputs):
+    def conditional_sample(self, condition_data, condition_mask, fixed_inputs, has_3d):
         self.position_noise_scheduler.set_timesteps(self.n_steps)
         self.rotation_noise_scheduler.set_timesteps(self.n_steps)
 
@@ -169,7 +170,7 @@ class DiffuserActor(nn.Module):
             out = self.policy_forward_pass(
                 trajectory,
                 t * torch.ones(len(trajectory)).to(trajectory.device).long(),
-                fixed_inputs
+                fixed_inputs, has_3d
             )
             out = out[-1]  # keep only last layer's output
             pos = self.position_noise_scheduler.step(
@@ -180,9 +181,10 @@ class DiffuserActor(nn.Module):
             ).prev_sample
             trajectory = torch.cat((pos, rot), -1)
 
-        trajectory = torch.cat((trajectory, out[..., 9:]), -1)
+        trajectory = torch.cat((trajectory, out[..., 9+7:]), -1)
+        joints = out[..., 9:9+7]
 
-        return trajectory
+        return trajectory, joints
 
     def compute_trajectory(
         self,
@@ -190,7 +192,8 @@ class DiffuserActor(nn.Module):
         rgb_obs,
         pcd_obs,
         instruction,
-        curr_gripper
+        curr_gripper,
+        has_3d
     ):
         # Normalize all pos
         pcd_obs = pcd_obs.clone()
@@ -216,10 +219,11 @@ class DiffuserActor(nn.Module):
         cond_mask = cond_mask.bool()
 
         # Sample
-        trajectory = self.conditional_sample(
+        trajectory, joints = self.conditional_sample(
             cond_data,
             cond_mask,
-            fixed_inputs
+            fixed_inputs,
+            has_3d
         )
 
         # Normalize quaternion
@@ -303,6 +307,7 @@ class DiffuserActor(nn.Module):
         pcd_obs,
         instruction,
         curr_gripper,
+        has_3d,
         run_inference=False
     ):
         """
@@ -314,12 +319,25 @@ class DiffuserActor(nn.Module):
             pcd_obs: (B, num_cameras, 3, H, W) in world coordinates
             instruction: (B, max_instruction_length, 512)
             curr_gripper: (B, nhist, 3+4+X)
-
+            has_3d: (B,) indicating if the observation is 3D
         Note:
             Regardless of rotation parametrization, the input rotation
             is ALWAYS expressed as a quaternion form.
             The model converts it to 6D internally if needed.
         """
+        # for basic baseline, fill pcd of 2d with meshgrid
+        # the code will branch into 2d and 3d in the actual model here
+        if not has_3d.all():
+            # separate cameras via z axis
+            pcd_obs[~has_3d, 0, [2]] = 1
+            pcd_obs[~has_3d, 1, [2]] = 0
+            # fill 2d pcd with meshgrid
+            pcd_obs[~has_3d, :, [0]], pcd_obs[~has_3d, :, [1]] = torch.meshgrid(
+                torch.linspace(-1, 1, pcd_obs.shape[-2], device=pcd_obs.device),
+                torch.linspace(1, -1, pcd_obs.shape[-1], device=pcd_obs.device), # see notebooks/check_data.ipynb for visualization
+                indexing='xy'
+            )
+
         if self._relative:
             pcd_obs, curr_gripper = self.convert2rel(pcd_obs, curr_gripper)
         if gt_trajectory is not None:
@@ -334,7 +352,8 @@ class DiffuserActor(nn.Module):
                 rgb_obs,
                 pcd_obs,
                 instruction,
-                curr_gripper
+                curr_gripper,
+                has_3d
             )
         # Normalize all pos
         gt_trajectory = gt_trajectory.clone()
@@ -385,7 +404,7 @@ class DiffuserActor(nn.Module):
 
         # Predict the noise residual
         pred = self.policy_forward_pass(
-            noisy_trajectory, timesteps, fixed_inputs
+            noisy_trajectory, timesteps, fixed_inputs, has_3d
         )
 
         # Compute loss
@@ -398,8 +417,11 @@ class DiffuserActor(nn.Module):
                 + 10 * F.l1_loss(rot, noise[..., 3:9], reduction='mean')
             )
             if torch.numel(gt_openess) > 0:
-                openess = layer_pred[..., 9:]
+                openess = layer_pred[..., 9+7:]
                 loss += F.binary_cross_entropy_with_logits(openess, gt_openess)
+
+            # joints = layer_pred[..., 9:9+7] # TODO: add joints loss, joints normalization
+
             total_loss = total_loss + loss
         return total_loss
 
@@ -436,6 +458,7 @@ class DiffusionHead(nn.Module):
             nn.Linear(embedding_dim, embedding_dim)
         )
         self.traj_time_emb = SinusoidalPosEmb(embedding_dim)
+        self.dim_2d_3d_emb = nn.Embedding(2, embedding_dim)
 
         # Attention from trajectory queries to language
         self.traj_lang_attention = nn.ModuleList([
@@ -499,7 +522,23 @@ class DiffusionHead(nn.Module):
             nn.Linear(embedding_dim, 3)
         )
 
-        # 3. Openess
+        # 3. Joint Position
+        self.joint_proj = nn.Linear(embedding_dim, embedding_dim)
+        if not self.lang_enhanced:
+            self.joint_self_attn = FFWRelativeSelfAttentionModule(
+                embedding_dim, num_attn_heads, 2, use_adaln=True
+            )
+        else:  # interleave cross-attention to language
+            self.joint_self_attn = FFWRelativeSelfCrossAttentionModule(
+                embedding_dim, num_attn_heads, 2, 1, use_adaln=True
+            )
+        self.joint_predictor = nn.Sequential(
+            nn.Linear(embedding_dim, embedding_dim),
+            nn.ReLU(),
+            nn.Linear(embedding_dim, 7)
+        )
+
+        # 4. Openess
         self.openess_predictor = nn.Sequential(
             nn.Linear(embedding_dim, embedding_dim),
             nn.ReLU(),
@@ -508,7 +547,7 @@ class DiffusionHead(nn.Module):
 
     def forward(self, trajectory, timestep,
                 context_feats, context, instr_feats, adaln_gripper_feats,
-                fps_feats, fps_pos):
+                fps_feats, fps_pos, has_3d):
         """
         Arguments:
             trajectory: (B, trajectory_length, 3+6+X)
@@ -519,6 +558,7 @@ class DiffusionHead(nn.Module):
             adaln_gripper_feats: (B, nhist, F)
             fps_feats: (N, B, F), N < context_feats.size(1)
             fps_pos: (B, N, F, 2)
+            has_3d: (B,) indicating if the observation is 3D
         """
         # Trajectory features
         traj_feats = self.traj_encoder(trajectory)  # (B, L, F)
@@ -542,21 +582,23 @@ class DiffusionHead(nn.Module):
         adaln_gripper_feats = einops.rearrange(
             adaln_gripper_feats, 'b l c -> l b c'
         )
-        pos_pred, rot_pred, openess_pred = self.prediction_head(
+        pos_pred, rot_pred, joints_pred, openess_pred = self.prediction_head(
             trajectory[..., :3], traj_feats,
             context[..., :3], context_feats,
             timestep, adaln_gripper_feats,
             fps_feats, fps_pos,
-            instr_feats
+            instr_feats,
+            has_3d
         )
-        return [torch.cat((pos_pred, rot_pred, openess_pred), -1)]
+        return [torch.cat((pos_pred, rot_pred, joints_pred, openess_pred), -1)]
 
     def prediction_head(self,
                         gripper_pcd, gripper_features,
                         context_pcd, context_features,
                         timesteps, curr_gripper_features,
                         sampled_context_features, sampled_rel_context_pos,
-                        instr_feats):
+                        instr_feats,
+                        has_3d):
         """
         Compute the predicted action (position, rotation, opening).
 
@@ -570,6 +612,7 @@ class DiffusionHead(nn.Module):
             sampled_context_features: A tensor of shape (K, B, F)
             sampled_rel_context_pos: A tensor of shape (B, K, F, 2)
             instr_feats: (B, max_instruction_length, F)
+            has_3d: (B,) indicating if the observation is 3D
         """
         # Diffusion timestep
         time_embs = self.encode_denoising_timestep(
@@ -580,17 +623,20 @@ class DiffusionHead(nn.Module):
         rel_gripper_pos = self.relative_pe_layer(gripper_pcd)
         rel_context_pos = self.relative_pe_layer(context_pcd)
 
+        # 2D vs 3D marker
+        dim_2d_3d = self.dim_2d_3d_emb(has_3d.long())
+
         # Cross attention from gripper to full context
         gripper_features = self.cross_attn(
             query=gripper_features,
-            value=context_features,
+            value=context_features + dim_2d_3d,
             query_pos=rel_gripper_pos,
             value_pos=rel_context_pos,
             diff_ts=time_embs
         )[-1]
 
         # Self attention among gripper and sampled context
-        features = torch.cat([gripper_features, sampled_context_features], 0)
+        features = torch.cat([gripper_features, sampled_context_features + dim_2d_3d], 0)
         rel_pos = torch.cat([rel_gripper_pos, sampled_rel_context_pos], 1)
         features = self.self_attn(
             query=features,
@@ -603,7 +649,7 @@ class DiffusionHead(nn.Module):
         num_gripper = gripper_features.shape[0]
 
         # Rotation head
-        rotation = self.predict_rot(
+        rotation, _ = self.predict_rot(
             features, rel_pos, time_embs, num_gripper, instr_feats
         )
 
@@ -612,10 +658,15 @@ class DiffusionHead(nn.Module):
             features, rel_pos, time_embs, num_gripper, instr_feats
         )
 
+        # Joint Position head
+        joints, _ = self.predict_joints(
+            features, rel_pos, time_embs, num_gripper, instr_feats
+        )
+
         # Openess head from position head
         openess = self.openess_predictor(position_features)
 
-        return position, rotation, openess
+        return position, rotation, joints, openess
 
     def encode_denoising_timestep(self, timestep, curr_gripper_features):
         """
@@ -666,4 +717,20 @@ class DiffusionHead(nn.Module):
         )
         rotation_features = self.rotation_proj(rotation_features)  # (B, N, C)
         rotation = self.rotation_predictor(rotation_features)
-        return rotation
+        return rotation, rotation_features
+
+    def predict_joints(self, features, rel_pos, time_embs, num_gripper,
+                    instr_feats):
+        joint_features = self.joint_self_attn(
+            query=features,
+            query_pos=rel_pos,
+            diff_ts=time_embs,
+            context=instr_feats,
+            context_pos=None
+        )[-1]
+        joint_features = einops.rearrange(
+            joint_features[:num_gripper], "npts b c -> b npts c"
+        )
+        joint_features = self.joint_proj(joint_features)
+        joints = self.joint_predictor(joint_features)
+        return joints, joint_features
