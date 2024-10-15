@@ -11,8 +11,8 @@
                 "--use_env",
                 "${workspaceFolder}/main_trajectory_calvin.py",
                 "--local_rank", "0",
-                "--batch_size", "16", // 5 corresponds to 9gig, 30 for norm, so 54 for 30
-                "--train_iters", "30",
+                "--batch_size", "8", // 5 corresponds to 9gig, 30 for norm, so 54 for 30
+                "--train_iters", "15",
                 "--embedding_dim", "24",
                 "--image_size", "256,256",
 
@@ -48,7 +48,11 @@
                 "--lang_enhanced", "1",
                 "--quaternion_format", "wxyz",
                 "--run_log_dir", "${input:shortDate}",
-                // "--input_mode", "2d3dmix"
+                // "--input_mode", "2d3dmix",
+                "--wandb",
+                "--wandb_project", "3dda-omer",
+                "--wandb_entity", "omeryagmurlu",
+                "--wandb_tags", "debug",
             ],
             "env": {
                 "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",

@@ -27,12 +27,15 @@ class BaseTrainTester:
 
         if dist.get_rank() == 0:
             if self.args.wandb:
-                import wandb
+                from utils.wandb import WandbWriter
 
-                wandb.init(project="project", config=vars(args))
-                wandb.run.name = args.log_dir.name
-                wandb.run.save()
-                self.writer = wandb
+                self.writer = WandbWriter(
+                    config=self.args,
+                    entity=self.args.wandb_entity,
+                    project_name=self.args.wandb_project,
+                    run_name=self.args.wandb_run_name if self.args.wandb_run_name is not None else self.args.run_log_dir,
+                    tags=self.args.wandb_tags,
+                )
             else:
                 self.writer = SummaryWriter(log_dir=args.log_dir)
 
@@ -118,6 +121,9 @@ class BaseTrainTester:
 
         # Get model
         model = self.get_model()
+
+        if dist.get_rank() == 0 and self.args.wandb:
+            self.writer.watch_model(model)
 
         # Get criterion
         criterion = self.get_criterion()

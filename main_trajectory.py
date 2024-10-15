@@ -49,6 +49,14 @@ class Arguments(tap.Tap):
     exp_log_dir: str = "exp"
     run_log_dir: str = "run"
 
+    # Wandb
+    wandb: bool = False
+    wandb_entity: str
+    wandb_project: str
+    wandb_run_name: str = None
+    wandb_tags: Tuple[str, ...] = None
+    wandb_log_freq: int = 100
+
     # Main training parameters
     num_workers: int = 1
     batch_size: int = 16
@@ -223,10 +231,12 @@ class TrainTester(BaseTrainTester):
             optimizer.step()
 
         # Log
-        if dist.get_rank() == 0 and (step_id + 1) % self.args.val_freq == 0:
-            self.writer.add_scalar("train-loss/2d3dmix", has_3d.float().mean(), step_id)
-            self.writer.add_scalar("lr", self.args.lr, step_id)
-            self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
+        if dist.get_rank() == 0:
+            # if (step_id + 1) % self.args.val_freq == 0:
+            if (step_id + 1) % self.args.val_freq == 0 or (self.args.wandb and (step_id + 1) % self.args.wandb_log_freq == 0):
+                self.writer.add_scalar("train-loss/2d3dmix", has_3d.float().mean(), step_id)
+                self.writer.add_scalar("lr", self.args.lr, step_id)
+                self.writer.add_scalar("train-loss/noise_mse", loss, step_id)
 
     @torch.no_grad()
     def evaluate_nsteps(self, model, criterion, loader, step_id, val_iters,
