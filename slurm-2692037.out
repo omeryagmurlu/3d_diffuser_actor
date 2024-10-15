@@ -1,0 +1,442 @@
+bash: conda: command not found
+GpuFreq=control_disabled
+[W socket.cpp:426] [c10d] The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use).
+[W socket.cpp:426] [c10d] The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use).
+[W socket.cpp:426] [c10d] The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use).
+[W socket.cpp:426] [c10d] The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+[E socket.cpp:462] [c10d] The server socket has failed to listen on any local network address.
+[W socket.cpp:426] [c10d] The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+[E socket.cpp:462] [c10d] The server socket has failed to listen on any local network address.
+[W socket.cpp:426] [c10d] The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+[E socket.cpp:462] [c10d] The server socket has failed to listen on any local network address.
+Traceback (most recent call last):
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/bin/torchrun", line 33, in <module>
+    sys.exit(load_entry_point('torch==1.13.1', 'console_scripts', 'torchrun')())
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 762, in main
+    run(args)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 753, in run
+    elastic_launch(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 237, in launch_agent
+    result = agent.run()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 709, in run
+    result = self._invoke_run(role)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 844, in _invoke_run
+    self._initialize_workers(self._worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 678, in _initialize_workers
+    self._rendezvous(worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 538, in _rendezvous
+    store, group_rank, group_world_size = spec.rdzv_handler.next_rendezvous()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/rendezvous/static_tcp_rendezvous.py", line 55, in next_rendezvous
+    self._store = TCPStore(  # type: ignore[call-arg]
+RuntimeError: The server socket has failed to listen on any local network address. The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use). The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+Traceback (most recent call last):
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/bin/torchrun", line 33, in <module>
+    sys.exit(load_entry_point('torch==1.13.1', 'console_scripts', 'torchrun')())
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 762, in main
+    run(args)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 753, in run
+    elastic_launch(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 237, in launch_agent
+    result = agent.run()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 709, in run
+    result = self._invoke_run(role)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 844, in _invoke_run
+    self._initialize_workers(self._worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 678, in _initialize_workers
+    self._rendezvous(worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 538, in _rendezvous
+    store, group_rank, group_world_size = spec.rdzv_handler.next_rendezvous()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/rendezvous/static_tcp_rendezvous.py", line 55, in next_rendezvous
+    self._store = TCPStore(  # type: ignore[call-arg]
+RuntimeError: The server socket has failed to listen on any local network address. The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use). The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+Traceback (most recent call last):
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/bin/torchrun", line 33, in <module>
+    sys.exit(load_entry_point('torch==1.13.1', 'console_scripts', 'torchrun')())
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 762, in main
+    run(args)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 753, in run
+    elastic_launch(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 237, in launch_agent
+    result = agent.run()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 709, in run
+    result = self._invoke_run(role)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 844, in _invoke_run
+    self._initialize_workers(self._worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 678, in _initialize_workers
+    self._rendezvous(worker_group)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 129, in wrapper
+    result = f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 538, in _rendezvous
+    store, group_rank, group_world_size = spec.rdzv_handler.next_rendezvous()
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/rendezvous/static_tcp_rendezvous.py", line 55, in next_rendezvous
+    self._store = TCPStore(  # type: ignore[call-arg]
+RuntimeError: The server socket has failed to listen on any local network address. The server socket has failed to bind to [::]:15437 (errno: 98 - Address already in use). The server socket has failed to bind to 0.0.0.0:15437 (errno: 98 - Address already in use).
+srun: error: hkn0504: tasks 0,2-3: Exited with exit code 1
+pybullet build time: Nov 28 2023 23:51:11
+pybullet build time: Nov 28 2023 23:51:11
+pybullet build time: Nov 28 2023 23:51:11
+pybullet build time: Nov 28 2023 23:51:11
+Arguments:
+Arguments:
+Arguments:
+Arguments:
+{'accumulate_grad_batches': 1,
+ 'backbone': 'clip',
+ 'base_log_dir': PosixPath('/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs'),
+ 'batch_size': 30,
+ 'batch_size_val': 3,
+ 'cache_size': 0,
+ 'cache_size_val': 0,
+ 'cameras': ('front', 'wrist'),
+ 'checkpoint': None,
+ 'dataset': PosixPath('data/calvin/packaged_D_D/training'),
+ 'dense_interpolation': 1,
+ 'diffusion_timesteps': 25,
+ 'embedding_dim': 192,
+ 'eval_only': 0,
+ 'exp_log_dir': 'omer',
+ 'fps_subsampling_factor': 3,
+ 'gripper_loc_bounds': 'tasks/calvin_rel_traj_location_bounds_task_ABC_D.json',
+ 'gripper_loc_bounds_buffer': 0.01,
+ 'image_rescale': '0.75,1.25',
+ 'image_size': '256,256',
+ 'input_mode': '2d3dmix',
+ 'instructions': PosixPath('instructions/calvin_task_D_D'),
+ 'interpolation_length': 20,
+ 'keypose_only': 0,
+ 'lang_enhanced': 1,
+ 'local_rank': None,
+ 'lr': 0.0003,
+ 'max_episode_length': 30,
+ 'max_episodes_per_task': -1,
+ 'num_history': 1,
+ 'num_vis_ins_attn_layers': 2,
+ 'num_workers': 4,
+ 'quaternion_format': 'wxyz',
+ 'relative_action': 1,
+ 'rotation_parametrization': '6D',
+ 'run_log_dir': '2d3dmix-2024-10-14T22:19:12+02:00',
+ 'seed': 0,
+ 'tasks': ('A', 'B', 'C', 'D'),
+ 'train_iters': 600000,
+ 'use_instruction': 1,
+ 'val_freq': 5000,
+ 'val_iters': 2,
+ 'valset': PosixPath('data/calvin/packaged_D_D/validation'),
+ 'variations': (0,),
+ 'wd': 0.005}
+----------------------------------------------------------------------------------------------------
+{'accumulate_grad_batches': 1,
+ 'backbone': 'clip',
+ 'base_log_dir': PosixPath('/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs'),
+ 'batch_size': 30,
+ 'batch_size_val': 3,
+ 'cache_size': 0,
+ 'cache_size_val': 0,
+ 'cameras': ('front', 'wrist'),
+ 'checkpoint': None,
+ 'dataset': PosixPath('data/calvin/packaged_D_D/training'),
+ 'dense_interpolation': 1,
+ 'diffusion_timesteps': 25,
+ 'embedding_dim': 192,
+ 'eval_only': 0,
+ 'exp_log_dir': 'omer',
+ 'fps_subsampling_factor': 3,
+ 'gripper_loc_bounds': 'tasks/calvin_rel_traj_location_bounds_task_ABC_D.json',
+ 'gripper_loc_bounds_buffer': 0.01,
+ 'image_rescale': '0.75,1.25',
+ 'image_size': '256,256',
+ 'input_mode': '2d3dmix',
+ 'instructions': PosixPath('instructions/calvin_task_D_D'),
+ 'interpolation_length': 20,
+ 'keypose_only': 0,
+ 'lang_enhanced': 1,
+ 'local_rank': None,
+ 'lr': 0.0003,
+ 'max_episode_length': 30,
+ 'max_episodes_per_task': -1,
+ 'num_history': 1,
+ 'num_vis_ins_attn_layers': 2,
+ 'num_workers': 4,
+ 'quaternion_format': 'wxyz',
+ 'relative_action': 1,
+ 'rotation_parametrization': '6D',
+ 'run_log_dir': '2d3dmix-2024-10-14T22:19:12+02:00',
+ 'seed': 0,
+ 'tasks': ('A', 'B', 'C', 'D'),
+ 'train_iters': 600000,
+ 'use_instruction': 1,
+ 'val_freq': 5000,
+ 'val_iters': 2,
+ 'valset': PosixPath('data/calvin/packaged_D_D/validation'),
+ 'variations': (0,),
+ 'wd': 0.005}
+----------------------------------------------------------------------------------------------------
+{'accumulate_grad_batches': 1,
+ 'backbone': 'clip',
+ 'base_log_dir': PosixPath('/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs'),
+ 'batch_size': 30,
+ 'batch_size_val': 3,
+ 'cache_size': 0,
+ 'cache_size_val': 0,
+ 'cameras': ('front', 'wrist'),
+ 'checkpoint': None,
+ 'dataset': PosixPath('data/calvin/packaged_D_D/training'),
+ 'dense_interpolation': 1,
+ 'diffusion_timesteps': 25,
+ 'embedding_dim': 192,
+ 'eval_only': 0,
+ 'exp_log_dir': 'omer',
+ 'fps_subsampling_factor': 3,
+ 'gripper_loc_bounds': 'tasks/calvin_rel_traj_location_bounds_task_ABC_D.json',
+ 'gripper_loc_bounds_buffer': 0.01,
+ 'image_rescale': '0.75,1.25',
+ 'image_size': '256,256',
+ 'input_mode': '2d3dmix',
+ 'instructions': PosixPath('instructions/calvin_task_D_D'),
+ 'interpolation_length': 20,
+ 'keypose_only': 0,
+ 'lang_enhanced': 1,
+ 'local_rank': None,
+ 'lr': 0.0003,
+ 'max_episode_length': 30,
+ 'max_episodes_per_task': -1,
+ 'num_history': 1,
+ 'num_vis_ins_attn_layers': 2,
+ 'num_workers': 4,
+ 'quaternion_format': 'wxyz',
+ 'relative_action': 1,
+ 'rotation_parametrization': '6D',
+ 'run_log_dir': '2d3dmix-2024-10-14T22:19:12+02:00',
+ 'seed': 0,
+ 'tasks': ('A', 'B', 'C', 'D'),
+ 'train_iters': 600000,
+ 'use_instruction': 1,
+ 'val_freq': 5000,
+ 'val_iters': 2,
+ 'valset': PosixPath('data/calvin/packaged_D_D/validation'),
+ 'variations': (0,),
+ 'wd': 0.005}
+----------------------------------------------------------------------------------------------------
+{'accumulate_grad_batches': 1,
+ 'backbone': 'clip',
+ 'base_log_dir': PosixPath('/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs'),
+ 'batch_size': 30,
+ 'batch_size_val': 3,
+ 'cache_size': 0,
+ 'cache_size_val': 0,
+ 'cameras': ('front', 'wrist'),
+ 'checkpoint': None,
+ 'dataset': PosixPath('data/calvin/packaged_D_D/training'),
+ 'dense_interpolation': 1,
+ 'diffusion_timesteps': 25,
+ 'embedding_dim': 192,
+ 'eval_only': 0,
+ 'exp_log_dir': 'omer',
+ 'fps_subsampling_factor': 3,
+ 'gripper_loc_bounds': 'tasks/calvin_rel_traj_location_bounds_task_ABC_D.json',
+ 'gripper_loc_bounds_buffer': 0.01,
+ 'image_rescale': '0.75,1.25',
+ 'image_size': '256,256',
+ 'input_mode': '2d3dmix',
+ 'instructions': PosixPath('instructions/calvin_task_D_D'),
+ 'interpolation_length': 20,
+ 'keypose_only': 0,
+ 'lang_enhanced': 1,
+ 'local_rank': None,
+ 'lr': 0.0003,
+ 'max_episode_length': 30,
+ 'max_episodes_per_task': -1,
+ 'num_history': 1,
+ 'num_vis_ins_attn_layers': 2,
+ 'num_workers': 4,
+ 'quaternion_format': 'wxyz',
+ 'relative_action': 1,
+ 'rotation_parametrization': '6D',
+ 'run_log_dir': '2d3dmix-2024-10-14T22:19:12+02:00',
+ 'seed': 0,
+ 'tasks': ('A', 'B', 'C', 'D'),
+ 'train_iters': 600000,
+ 'use_instruction': 1,
+ 'val_freq': 5000,
+ 'val_iters': 2,
+ 'valset': PosixPath('data/calvin/packaged_D_D/validation'),
+ 'variations': (0,),
+ 'wd': 0.005}
+----------------------------------------------------------------------------------------------------
+Gripper workspace size: Gripper workspace size: Gripper workspace size: Gripper workspace size: [0.66333743 0.59459641 0.39931523]
+[0.66333743 0.59459641 0.39931523]
+[0.66333743 0.59459641 0.39931523]
+[0.66333743 0.59459641 0.39931523]
+Logging: /hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs/omer/2d3dmix-2024-10-14T22:19:12+02:00
+Available devices (CUDA_VISIBLE_DEVICES): 0,1,2,3
+Logging: /hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs/omer/2d3dmix-2024-10-14T22:19:12+02:00
+Available devices (CUDA_VISIBLE_DEVICES): 0,1,2,3
+Logging: /hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs/omer/2d3dmix-2024-10-14T22:19:12+02:00
+Available devices (CUDA_VISIBLE_DEVICES): 0,1,2,3
+Logging: /hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/train_logs/omer/2d3dmix-2024-10-14T22:19:12+02:00
+Available devices (CUDA_VISIBLE_DEVICES): 0,1,2,3
+Device count 4
+Device count 4
+Device count 4
+Device count 4
+Can't find dataset folder data/calvin/packaged_D_D/training/A+0
+Can't find dataset folder data/calvin/packaged_D_D/training/B+0
+Can't find dataset folder data/calvin/packaged_D_D/training/C+0
+Can't find dataset folder data/calvin/packaged_D_D/training/A+0
+Can't find dataset folder data/calvin/packaged_D_D/training/B+0
+Can't find dataset folder data/calvin/packaged_D_D/training/C+0
+Can't find dataset folder data/calvin/packaged_D_D/training/A+0
+Can't find dataset folder data/calvin/packaged_D_D/training/B+0
+Can't find dataset folder data/calvin/packaged_D_D/training/C+0
+Created dataset from data/calvin/packaged_D_D/training with 5124
+Can't find dataset folder data/calvin/packaged_D_D/validation/A+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/B+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/C+0
+Created dataset from data/calvin/packaged_D_D/validation with 1011
+Created dataset from data/calvin/packaged_D_D/training with 5124
+Can't find dataset folder data/calvin/packaged_D_D/validation/A+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/B+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/C+0
+Created dataset from data/calvin/packaged_D_D/validation with 1011
+Created dataset from data/calvin/packaged_D_D/training with 5124
+Can't find dataset folder data/calvin/packaged_D_D/validation/A+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/B+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/C+0
+Created dataset from data/calvin/packaged_D_D/validation with 1011
+Can't find dataset folder data/calvin/packaged_D_D/training/A+0
+Can't find dataset folder data/calvin/packaged_D_D/training/B+0
+Can't find dataset folder data/calvin/packaged_D_D/training/C+0
+Created dataset from data/calvin/packaged_D_D/training with 5124
+Can't find dataset folder data/calvin/packaged_D_D/validation/A+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/B+0
+Can't find dataset folder data/calvin/packaged_D_D/validation/C+0
+Created dataset from data/calvin/packaged_D_D/validation with 1011
+Model parameters: 10718609
+Model parameters: 10718609
+Model parameters: 10718609
+Model parameters: 10718609
+  0%|          | 0/600000 [00:00<?, ?it/s]  0%|          | 0/600000 [00:00<?, ?it/s]  0%|          | 0/600000 [00:00<?, ?it/s]  0%|          | 0/600000 [00:00<?, ?it/s]  0%|          | 1/600000 [00:14<2418:50:38, 14.51s/it]  0%|          | 1/600000 [00:14<2410:03:48, 14.46s/it]  0%|          | 1/600000 [00:14<2458:03:51, 14.75s/it]  0%|          | 1/600000 [00:14<2420:04:31, 14.52s/it]  0%|          | 2/600000 [00:19<1458:42:18,  8.75s/it]  0%|          | 2/600000 [00:19<1472:11:44,  8.83s/it]  0%|          | 2/600000 [00:19<1456:15:33,  8.74s/it]  0%|          | 2/600000 [00:19<1455:12:17,  8.73s/it]  0%|          | 3/600000 [00:24<1159:57:18,  6.96s/it]  0%|          | 3/600000 [00:24<1167:17:14,  7.00s/it]  0%|          | 3/600000 [00:24<1158:34:16,  6.95s/it]  0%|          | 3/600000 [00:24<1157:57:21,  6.95s/it]  0%|          | 4/600000 [00:28<1011:58:37,  6.07s/it]  0%|          | 4/600000 [00:28<1006:41:46,  6.04s/it]  0%|          | 4/600000 [00:28<1007:37:47,  6.05s/it]  0%|          | 4/600000 [00:28<1006:22:20,  6.04s/it]  0%|          | 5/600000 [00:33<952:48:36,  5.72s/it]   0%|          | 5/600000 [00:33<949:58:11,  5.70s/it]   0%|          | 5/600000 [00:33<949:10:12,  5.70s/it]   0%|          | 5/600000 [00:33<949:25:38,  5.70s/it]   0%|          | 6/600000 [00:38<895:17:36,  5.37s/it]  0%|          | 6/600000 [00:38<893:33:46,  5.36s/it]  0%|          | 6/600000 [00:38<893:01:42,  5.36s/it]  0%|          | 6/600000 [00:38<893:12:09,  5.36s/it]  0%|          | 7/600000 [00:43<863:18:01,  5.18s/it]  0%|          | 7/600000 [00:43<864:37:17,  5.19s/it]  0%|          | 7/600000 [00:43<863:03:40,  5.18s/it]  0%|          | 7/600000 [00:43<863:02:46,  5.18s/it]  0%|          | 8/600000 [00:48<830:42:12,  4.98s/it]  0%|          | 8/600000 [00:47<829:48:57,  4.98s/it]  0%|          | 8/600000 [00:47<829:42:31,  4.98s/it]  0%|          | 8/600000 [00:47<829:36:55,  4.98s/it]  0%|          | 9/600000 [00:53<837:30:24,  5.03s/it]  0%|          | 9/600000 [00:52<836:54:55,  5.02s/it]  0%|          | 9/600000 [00:52<836:45:20,  5.02s/it]  0%|          | 9/600000 [00:52<836:47:46,  5.02s/it]  0%|          | 10/600000 [00:57<826:19:30,  4.96s/it]  0%|          | 10/600000 [00:57<825:48:13,  4.95s/it]  0%|          | 10/600000 [00:57<827:09:10,  4.96s/it]  0%|          | 10/600000 [00:57<827:05:35,  4.96s/it]  0%|          | 11/600000 [01:02<826:01:04,  4.96s/it]  0%|          | 11/600000 [01:02<825:23:28,  4.95s/it]  0%|          | 11/600000 [01:02<825:12:43,  4.95s/it]  0%|          | 11/600000 [01:02<825:43:07,  4.95s/it]  0%|          | 12/600000 [01:07<814:12:53,  4.89s/it]  0%|          | 12/600000 [01:07<813:44:47,  4.88s/it]  0%|          | 12/600000 [01:07<814:50:28,  4.89s/it]  0%|          | 12/600000 [01:07<815:05:09,  4.89s/it]  0%|          | 13/600000 [01:12<805:13:50,  4.83s/it]  0%|          | 13/600000 [01:12<804:49:38,  4.83s/it]  0%|          | 13/600000 [01:12<805:43:29,  4.83s/it]  0%|          | 13/600000 [01:12<805:54:12,  4.84s/it]  0%|          | 14/600000 [01:17<802:09:00,  4.81s/it]  0%|          | 14/600000 [01:16<801:20:49,  4.81s/it]  0%|          | 14/600000 [01:16<801:50:15,  4.81s/it]  0%|          | 14/600000 [01:16<801:27:44,  4.81s/it]  0%|          | 15/600000 [01:21<801:19:16,  4.81s/it]  0%|          | 15/600000 [01:21<801:55:23,  4.81s/it]  0%|          | 15/600000 [01:21<801:45:29,  4.81s/it]  0%|          | 15/600000 [01:21<801:28:34,  4.81s/it]  0%|          | 16/600000 [01:27<820:57:45,  4.93s/it]  0%|          | 16/600000 [01:26<820:35:48,  4.92s/it]  0%|          | 16/600000 [01:26<820:55:44,  4.93s/it]  0%|          | 16/600000 [01:26<820:43:41,  4.92s/it]  0%|          | 17/600000 [01:31<814:12:55,  4.89s/it]  0%|          | 17/600000 [01:31<813:56:51,  4.88s/it]  0%|          | 17/600000 [01:31<813:55:22,  4.88s/it]  0%|          | 17/600000 [01:31<814:04:16,  4.88s/it]  0%|          | 18/600000 [01:36<795:15:35,  4.77s/it]  0%|          | 18/600000 [01:36<795:04:39,  4.77s/it]  0%|          | 18/600000 [01:36<796:17:17,  4.78s/it]  0%|          | 18/600000 [01:36<796:21:54,  4.78s/it]  0%|          | 19/600000 [01:41<820:52:49,  4.93s/it]  0%|          | 19/600000 [01:41<820:24:47,  4.92s/it]  0%|          | 19/600000 [01:41<821:42:44,  4.93s/it]  0%|          | 19/600000 [01:41<822:01:20,  4.93s/it]  0%|          | 20/600000 [01:46<829:57:15,  4.98s/it]  0%|          | 20/600000 [01:46<830:20:28,  4.98s/it]  0%|          | 20/600000 [01:46<829:37:07,  4.98s/it]  0%|          | 20/600000 [01:46<829:54:21,  4.98s/it]  0%|          | 21/600000 [01:51<816:30:46,  4.90s/it]  0%|          | 21/600000 [01:51<816:17:56,  4.90s/it]  0%|          | 21/600000 [01:51<816:09:15,  4.90s/it]  0%|          | 21/600000 [01:51<816:03:41,  4.90s/it]  0%|          | 21/600000 [01:55<917:36:12,  5.51s/it]
+Traceback (most recent call last):
+  File "main_trajectory_calvin.py", line 214, in <module>
+    train_tester.main(collate_fn=traj_collate_fn)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/engine.py", line 155, in main
+    self.train_one_step(model, criterion, optimizer, step_id, sample)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/main_trajectory.py", line 207, in train_one_step
+    out = model(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/parallel/distributed.py", line 1040, in forward
+    output = self._run_ddp_forward(*inputs, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/parallel/distributed.py", line 1000, in _run_ddp_forward
+    return module_to_run(*inputs[0], **kwargs[0])
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/trajectory_optimization/diffuser_actor.py", line 406, in forward
+    pred = self.policy_forward_pass(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/trajectory_optimization/diffuser_actor.py", line 130, in policy_forward_pass
+    return self.prediction_head(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/trajectory_optimization/diffuser_actor.py", line 585, in forward
+    pos_pred, rot_pred, joints_pred, openess_pred = self.prediction_head(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/trajectory_optimization/diffuser_actor.py", line 662, in prediction_head
+    joints, _ = self.predict_joints(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/trajectory_optimization/diffuser_actor.py", line 724, in predict_joints
+    joint_features = self.joint_self_attn(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/utils/layers.py", line 487, in forward
+    query = self.ffw_layers[i](query, diff_ts)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/code/3d_diffuser_actor/diffuser_actor/utils/layers.py", line 317, in forward
+    output = self.linear2(self.dropout(self.activation(self.linear1(x))))
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB (GPU 1; 39.38 GiB total capacity; 27.10 GiB already allocated; 11.50 MiB free; 36.90 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 2293893 closing signal SIGTERM
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 2293895 closing signal SIGTERM
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 2293896 closing signal SIGTERM
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 1 (pid: 2293894) of binary: /hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/bin/python
+Traceback (most recent call last):
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/bin/torchrun", line 33, in <module>
+    sys.exit(load_entry_point('torch==1.13.1', 'console_scripts', 'torchrun')())
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 762, in main
+    run(args)
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/run.py", line 753, in run
+    elastic_launch(
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/hkfs/home/project/hk-project-sustainebot/uqtlv/micromamba/envs/3d_diffuser_actor/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 246, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main_trajectory_calvin.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2024-10-14_22:21:31
+  host      : hkn0504.localdomain
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 2293894)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: hkn0504: task 1: Exited with exit code 1
+
+============================= JOB FEEDBACK =============================
+
+Job ID: 2692037
+Cluster: hk
+User/Group: uqtlv/hk-project-sustainebot
+Account: hk-project-sustainebot
+State: FAILED (exit code 1)
+Partition: accelerated
+Nodes: 1
+Cores per node: 64
+Nodelist: hkn0504
+CPU Utilized: 00:09:08
+CPU Efficiency: 5.07% of 03:00:16 core-walltime
+Job Wall-clock time: 00:02:49
+Starttime: Mon Oct 14 22:18:46 2024
+Endtime: Mon Oct 14 22:21:35 2024
+Memory Utilized: 179.87 GB (estimated maximum)
+Memory Efficiency: 0.00% of 0.00 MB (0.00 MB/node)
+Energy Consumed: 163167 Joule / 45.3241666666667 Watthours
+Average node power draw: 965.485207100592 Watt

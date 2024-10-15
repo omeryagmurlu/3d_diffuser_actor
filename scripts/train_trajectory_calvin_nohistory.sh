@@ -1,7 +1,7 @@
 main_dir=Planner_Calvin
 
-dataset=./data/calvin/packaged_ABC_D/training
-valset=./data/calvin/packaged_ABC_D/validation
+dataset=./data/calvin/packaged_D_D/training
+valset=./data/calvin/packaged_D_D/validation
 
 lr=3e-4
 wd=5e-3
@@ -11,7 +11,7 @@ num_history=1
 diffusion_timesteps=25
 B=30
 C=192
-ngpus=6
+ngpus=3
 backbone=clip
 image_size="256,256"
 relative_action=1
@@ -22,7 +22,7 @@ gripper_buffer=0.01
 val_freq=5000
 quaternion_format=wxyz
 
-run_log_dir=diffusion_taskABC_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
+run_log_dir=diffusion_taskD_D-C$C-B$B-lr$lr-DI$dense_interpolation-$interpolation_length-H$num_history-DT$diffusion_timesteps-backbone$backbone-S$image_size-R$relative_action-wd$wd
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
 
@@ -32,7 +32,7 @@ CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --backbone $backbone \
     --dataset $dataset \
     --valset $valset \
-    --instructions instructions/calvin_task_ABC_D/ \
+    --instructions instructions/calvin_task_D_D/ \
     --gripper_loc_bounds $gripper_loc_bounds \
     --gripper_loc_bounds_buffer $gripper_buffer \
     --image_size $image_size \
@@ -68,7 +68,7 @@ CUDA_LAUNCH_BLOCKING=1 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
 
 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     online_evaluation_calvin/evaluate_policy.py \
-    --calvin_dataset_path calvin/dataset/task_ABC_D \
+    --calvin_dataset_path calvin/dataset/task_D_D \
     --calvin_model_path calvin/calvin_models \
     --text_encoder clip \
     --text_max_length 16 \
@@ -76,7 +76,7 @@ torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --backbone $backbone \
     --gripper_loc_bounds $gripper_loc_bounds \
     --gripper_loc_bounds_buffer $gripper_buffer \
-    --calvin_gripper_loc_bounds calvin/dataset/task_ABC_D/validation/statistics.yaml \
+    --calvin_gripper_loc_bounds calvin/dataset/task_D_D/validation/statistics.yaml \
     --embedding_dim $C \
     --action_dim 7 \
     --use_instruction 1 \
