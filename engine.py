@@ -37,7 +37,12 @@ class BaseTrainTester:
                     tags=self.args.wandb_tags,
                 )
             else:
-                self.writer = SummaryWriter(log_dir=args.log_dir)
+                self.writer = SummaryWriter(log_dir=args.log_dir)\
+
+        if dist.get_rank() == 0 and self.args.memory_profiling:
+            from utils.memory_profiling import MemoryProfiler
+
+            self.memory_profiler = MemoryProfiler(self.args.log_dir)
 
     @staticmethod
     def get_datasets():
@@ -202,6 +207,9 @@ class BaseTrainTester:
                         model, optimizer, step_id, new_loss, best_loss
                     )
                 model.train()
+
+            if dist.get_rank() == 0 and self.args.memory_profiling:
+                self.memory_profiler.dump_memory_profile(step_id)
 
         return model
 

@@ -88,6 +88,7 @@ class Arguments(tap.Tap):
 
     # Debugging
     local_rank: int = None # with torchrun, this is set automatically via env var
+    memory_profiling: bool = False
 
     # Input mode
     input_mode: str = '3donly'  # one of '2donly', '3donly', '2d_3d_mix'
