@@ -2,7 +2,8 @@ import numpy as np
 from torch import nn
 from torch.nn import functional as F
 
-from .multihead_custom_attention import MultiheadCustomAttention
+# from .multihead_custom_attention import MultiheadCustomAttention
+from .multihead_flash_attention import MultiheadFlashAttention as MultiheadCustomAttention
 
 
 class ParallelAttentionLayer(nn.Module):

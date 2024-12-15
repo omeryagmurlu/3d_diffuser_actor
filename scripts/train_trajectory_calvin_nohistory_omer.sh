@@ -10,12 +10,12 @@
 #SBATCH --ntasks-per-node=4
 
 source /home/hk-project-sustainebot/uqtlv/.bashrc
-conda activate 3d_diffuser_actor
+conda activate 3d_diffuser_actor_dev
 
 main_dir=omer
 
-dataset=./data/calvin/packaged_D_D/training
-valset=./data/calvin/packaged_D_D/validation
+dataset=./data/calvin/packaged_task_D_D/training
+valset=./data/calvin/packaged_task_D_D/validation
 
 lr=3e-4
 wd=5e-3
@@ -25,7 +25,7 @@ num_history=1
 diffusion_timesteps=25
 B=30
 C=192
-ngpus=3
+ngpus=4
 backbone=clip
 image_size="256,256"
 relative_action=1
@@ -36,14 +36,14 @@ gripper_buffer=0.01
 val_freq=5000
 quaternion_format=wxyz
 
-input_mode=2d3dmix
+input_mode=3donly
 
 run_log_dir=$input_mode-`date --iso-8601=s`
 
 export PYTHONPATH=`pwd`:$PYTHONPATH
 # export TORCH_USE_CUDA_DSA=1
 export CUDA_LAUNCH_BLOCKING=1
-export CUDA_VISIBLE_DEVICES=1,2,3
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 torchrun --nproc_per_node $ngpus --master_port $RANDOM \
@@ -52,7 +52,7 @@ torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --backbone $backbone \
     --dataset $dataset \
     --valset $valset \
-    --instructions instructions/calvin_task_D_D/ \
+    --instructions data/calvin_instructions/packaged_task_D_D/ \
     --gripper_loc_bounds $gripper_loc_bounds \
     --gripper_loc_bounds_buffer $gripper_buffer \
     --image_size $image_size \
@@ -84,7 +84,10 @@ torchrun --nproc_per_node $ngpus --master_port $RANDOM \
     --lang_enhanced $lang_enhanced \
     --quaternion_format $quaternion_format \
     --run_log_dir $run_log_dir \
-    --input_mode $input_mode
+    --input_mode $input_mode \
+    --wandb \
+    --wandb_project 3dda-r33 \
+    --wandb_entity omeryagmurlu
 
 
 # torchrun --nproc_per_node $ngpus --master_port $RANDOM \

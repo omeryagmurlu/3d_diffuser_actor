@@ -23,13 +23,14 @@ def create_model(args, pretrained=True):
 
 class DiffusionModel(CalvinBaseModel):
     """A wrapper for the DiffuserActor model, which handles
-            1. Model initialization
-            2. Encodings of instructions
-            3. Model inference
-            4. Action post-processing
-                - quaternion to Euler angles
-                - relative to absolute action
+    1. Model initialization
+    2. Encodings of instructions
+    3. Model inference
+    4. Action post-processing
+        - quaternion to Euler angles
+        - relative to absolute action
     """
+
     def __init__(self, args):
         self.args = args
         self.policy = self.get_policy()
@@ -62,17 +63,20 @@ class DiffusionModel(CalvinBaseModel):
             if encoder == "bert":
                 model = transformers.BertModel.from_pretrained("bert-base-uncased")
             elif encoder == "clip":
-                model = transformers.CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
+                model = transformers.CLIPTextModel.from_pretrained(
+                    "openai/clip-vit-base-patch32"
+                )
             else:
                 raise ValueError(f"Unexpected encoder {encoder}")
             if not isinstance(model, transformers.PreTrainedModel):
                 raise ValueError(f"Unexpected encoder {encoder}")
             return model
 
-
         def load_tokenizer(encoder) -> transformers.PreTrainedTokenizer:
             if encoder == "bert":
-                tokenizer = transformers.BertTokenizer.from_pretrained("bert-base-uncased")
+                tokenizer = transformers.BertTokenizer.from_pretrained(
+                    "bert-base-uncased"
+                )
             elif encoder == "clip":
                 tokenizer = transformers.CLIPTokenizer.from_pretrained(
                     "openai/clip-vit-base-patch32"
@@ -83,17 +87,15 @@ class DiffusionModel(CalvinBaseModel):
                 raise ValueError(f"Unexpected encoder {encoder}")
             return tokenizer
 
-
         tokenizer = load_tokenizer(self.args.text_encoder)
         tokenizer.model_max_length = self.args.text_max_length
 
         model = load_model(self.args.text_encoder)
-    
+
         return tokenizer, model
 
     def reset(self):
-        """Set model to evaluation mode.
-        """
+        """Set model to evaluation mode."""
         device = self.args.device
         self.policy.eval()
         self.text_model.eval()
@@ -108,7 +110,7 @@ class DiffusionModel(CalvinBaseModel):
         for key in state_dict:
             _key = key[7:]
             model_weights[_key] = state_dict[key]
-        print(f'Loading weights from {self.args.checkpoint}')
+        print(f"Loading weights from {self.args.checkpoint}")
         self.policy.load_state_dict(model_weights)
 
     def encode_instruction(self, instruction, device="cuda"):
@@ -117,11 +119,11 @@ class DiffusionModel(CalvinBaseModel):
         Args:
             instruction: a string of instruction
             device: a string of device
-        
+
         Returns:
             pred: a tensor of latent embeddings of shape (text_max_length, 512)
         """
-        instr = instruction + '.'
+        instr = instruction + "."
         tokens = self.text_tokenizer(instr, padding="max_length")["input_ids"]
 
         tokens = torch.tensor(tokens).to(device)
@@ -146,18 +148,18 @@ class DiffusionModel(CalvinBaseModel):
         device = self.args.device
 
         # Organize inputs
-        trajectory_mask = torch.full(
-            [1, self.args.interpolation_length - 1], False
-        ).to(device)
+        trajectory_mask = torch.full([1, self.args.interpolation_length - 1], False).to(
+            device
+        )
         fake_trajectory = torch.full(
             [1, self.args.interpolation_length - 1, self.args.action_dim], 0
         ).to(device)
-        rgbs = np.stack([
-            obs["rgb_obs"]["rgb_static"], obs["rgb_obs"]["rgb_gripper"]
-        ], axis=0).transpose(0, 3, 1, 2) # [ncam, 3, H, W]
-        pcds = np.stack([
-            obs["pcd_obs"]["pcd_static"], obs["pcd_obs"]["pcd_gripper"]
-        ], axis=0).transpose(0, 3, 1, 2) # [ncam, 3, H, W]
+        rgbs = np.stack(
+            [obs["rgb_obs"]["rgb_static"], obs["rgb_obs"]["rgb_gripper"]], axis=0
+        ).transpose(0, 3, 1, 2)  # [ncam, 3, H, W]
+        pcds = np.stack(
+            [obs["pcd_obs"]["pcd_static"], obs["pcd_obs"]["pcd_gripper"]], axis=0
+        ).transpose(0, 3, 1, 2)  # [ncam, 3, H, W]
 
         rgbs = torch.as_tensor(rgbs).to(device).unsqueeze(0)
         pcds = torch.as_tensor(pcds).to(device).unsqueeze(0)
@@ -168,7 +170,15 @@ class DiffusionModel(CalvinBaseModel):
 
         # history of actions
         gripper = torch.as_tensor(obs["proprio"]).to(device).unsqueeze(0)
-        gripper = gripper[:, -self.args.num_history:]
+        gripper = gripper[:, -self.args.num_history :]
+
+        if self.args.input_mode == "3d":
+            has_3d = torch.tensor([[1]], device=rgbs.device)
+        elif self.args.input_mode == "2d":
+            has_3d = torch.tensor([[0]], device=rgbs.device)
+            pcds = torch.zeros_like(pcds)
+        else:
+            raise ValueError(f"Unexpected input mode {self.args.input_mode}")
 
         trajectory = self.policy(
             fake_trajectory.float(),
@@ -177,7 +187,8 @@ class DiffusionModel(CalvinBaseModel):
             pcds.float(),
             instruction.float(),
             curr_gripper=gripper[..., :7].float(),
-            run_inference=True
+            has_3d=has_3d,
+            run_inference=True,
         )
 
         # Convert quaternion to Euler angles
@@ -194,7 +205,7 @@ class DiffusionModel(CalvinBaseModel):
             trajectory[:, :, :3] = np.clip(
                 trajectory[:, :, :3],
                 a_min=self.args.calvin_gripper_loc_bounds[0].reshape(1, 1, 3),
-                a_max=self.args.calvin_gripper_loc_bounds[1].reshape(1, 1, 3)
+                a_max=self.args.calvin_gripper_loc_bounds[1].reshape(1, 1, 3),
             )
 
         return trajectory

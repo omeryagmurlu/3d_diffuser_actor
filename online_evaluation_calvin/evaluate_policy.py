@@ -1,6 +1,7 @@
 """Modified from
 https://github.com/mees/calvin/blob/main/calvin_models/calvin_agent/evaluation/evaluate_policy.py
 """
+
 import os
 import gc
 from typing import Tuple, Optional, List
@@ -25,7 +26,7 @@ from online_evaluation_calvin.evaluate_utils import (
     get_env_state_for_initial_condition,
     collect_results,
     write_results,
-    get_log_dir
+    get_log_dir,
 )
 from online_evaluation_calvin.multistep_sequences import get_sequences
 from online_evaluation_calvin.evaluate_utils import get_env
@@ -33,7 +34,7 @@ from online_evaluation_calvin.evaluate_utils import get_env
 logger = logging.getLogger(__name__)
 
 EP_LEN = 60
-NUM_SEQUENCES = 1000
+NUM_SEQUENCES = 250
 EXECUTE_LEN = 20
 
 
@@ -49,7 +50,7 @@ class Arguments(tap.Tap):
 
     # Offline data loader
     seed: int = 0
-    tasks: Tuple[str, ...] # indicates the environment
+    tasks: Tuple[str, ...]  # indicates the environment
     checkpoint: Path
     gripper_loc_bounds: Optional[str] = None
     gripper_loc_bounds_buffer: float = 0.04
@@ -60,19 +61,21 @@ class Arguments(tap.Tap):
     base_log_dir: Path = Path(__file__).parent / "eval_logs" / "calvin"
 
     # Model
-    action_dim: int = 7 # dummy, as DiffuserActor assumes action_dim is 7
-    image_size: str = "256,256" # decides the FPN architecture
+    action_dim: int = 7  # dummy, as DiffuserActor assumes action_dim is 7
+    image_size: str = "256,256"  # decides the FPN architecture
     backbone: str = "clip"  # one of "resnet", "clip"
     embedding_dim: int = 120
     num_vis_ins_attn_layers: int = 2
     use_instruction: int = 0
-    rotation_parametrization: str = 'quat'
-    quaternion_format: str = 'wxyz'
+    rotation_parametrization: str = "quat"
+    quaternion_format: str = "wxyz"
     diffusion_timesteps: int = 100
     lang_enhanced: int = 0
     fps_subsampling_factor: int = 3
     num_history: int = 0
-    interpolation_length: int = 2 # the number of steps to reach keypose
+    interpolation_length: int = 2  # the number of steps to reach keypose
+
+    input_mode: str = "3d"
 
 
 def make_env(dataset_path, show_gui=True, split="validation", scene=None):
@@ -85,8 +88,9 @@ def make_env(dataset_path, show_gui=True, split="validation", scene=None):
     return env
 
 
-def evaluate_policy(model, env, conf_dir, eval_log_dir=None, save_video=False,
-                    sequence_indices=[]):
+def evaluate_policy(
+    model, env, conf_dir, eval_log_dir=None, save_video=False, sequence_indices=[]
+):
     """
     Run this function to evaluate a model on the CALVIN challenge.
 
@@ -102,9 +106,13 @@ def evaluate_policy(model, env, conf_dir, eval_log_dir=None, save_video=False,
     Returns:
         results: a list of integers indicates the number of tasks completed
     """
-    task_cfg = OmegaConf.load(conf_dir / "callbacks/rollout/tasks/new_playtable_tasks.yaml")
+    task_cfg = OmegaConf.load(
+        conf_dir / "callbacks/rollout/tasks/new_playtable_tasks.yaml"
+    )
     task_oracle = hydra.utils.instantiate(task_cfg)
-    val_annotations = OmegaConf.load(conf_dir / "annotations/new_playtable_validation.yaml")
+    val_annotations = OmegaConf.load(
+        conf_dir / "annotations/new_playtable_validation.yaml"
+    )
 
     eval_log_dir = get_log_dir(eval_log_dir)
 
@@ -118,43 +126,57 @@ def evaluate_policy(model, env, conf_dir, eval_log_dir=None, save_video=False,
         if seq_ind in tested_sequence_indices:
             continue
         result, videos = evaluate_sequence(
-            env, model, task_oracle, initial_state,
-            eval_sequence, val_annotations, save_video
+            env,
+            model,
+            task_oracle,
+            initial_state,
+            eval_sequence,
+            val_annotations,
+            save_video,
         )
         write_results(eval_log_dir, seq_ind, result)
         results.append(result)
         str_results = (
-            " ".join([f"{i + 1}/5 : {v * 100:.1f}% |"
-            for i, v in enumerate(count_success(results))]) + "|"
+            " ".join(
+                [
+                    f"{i + 1}/5 : {v * 100:.1f}% |"
+                    for i, v in enumerate(count_success(results))
+                ]
+            )
+            + "|"
         )
         print(str_results + "\n")
 
         if save_video:
             import moviepy.video.io.ImageSequenceClip
             from moviepy.editor import vfx
+
             clip = []
             import cv2
+
             for task_ind, (subtask, video) in enumerate(zip(eval_sequence, videos)):
                 for img_ind, img in enumerate(video):
-                    cv2.putText(img,
-                                f'{task_ind}: {subtask}',
-                                (10, 180),
-                                cv2.FONT_HERSHEY_SIMPLEX, 
-                                0.5,
-                                (0, 0, 0),
-                                1,
-                                2)
+                    # cv2.putText(
+                    #     img,
+                    #     f"{task_ind}: {subtask}",
+                    #     (10, 180),
+                    #     cv2.FONT_HERSHEY_SIMPLEX,
+                    #     0.5,
+                    #     (0, 0, 0),
+                    #     1,
+                    #     2,
+                    # )
                     video[img_ind] = img
                 clip.extend(video)
             clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(clip, fps=30)
             clip.write_videofile(f"calvin_seq{seq_ind}.mp4")
 
-
     return results
 
 
-def evaluate_sequence(env, model, task_checker, initial_state, eval_sequence,
-                      val_annotations, save_video):
+def evaluate_sequence(
+    env, model, task_checker, initial_state, eval_sequence, val_annotations, save_video
+):
     """
     Evaluates a sequence of language instructions.
 
@@ -181,8 +203,7 @@ def evaluate_sequence(env, model, task_checker, initial_state, eval_sequence,
     for subtask in eval_sequence:
         # get lang annotation for subtask
         lang_annotation = val_annotations[subtask][0]
-        success, video = rollout(env, model, task_checker,
-                                 subtask, lang_annotation)
+        success, video = rollout(env, model, task_checker, subtask, lang_annotation)
         video_aggregators.append(video)
 
         if success:
@@ -207,14 +228,14 @@ def rollout(env, model, task_oracle, subtask, lang_annotation):
         Success/Fail: a boolean indicates whether the task is completed
         video: a list of images that shows the trajectory of the robot
     """
-    video = [] # show video for debugging
+    video = []  # show video for debugging
     obs = env.get_obs()
 
     model.reset()
     start_info = env.get_info()
 
-    print('------------------------------')
-    print(f'task: {lang_annotation}')
+    print("------------------------------")
+    print(f"task: {lang_annotation}")
     video.append(obs["rgb_obs"]["rgb_static"])
 
     pbar = tqdm(range(EP_LEN))
@@ -230,12 +251,12 @@ def rollout(env, model, task_oracle, subtask, lang_annotation):
             curr_action = [
                 trajectory[0, act_ind, :3],
                 trajectory[0, act_ind, 3:6],
-                trajectory[0, act_ind, [6]]
+                trajectory[0, act_ind, [6]],
             ]
             pbar.set_description(f"step: {step}")
-            curr_proprio = obs['proprio']
+            curr_proprio = obs["proprio"]
             obs, _, _, current_info = env.step(curr_action)
-            obs['proprio'] = curr_proprio
+            obs["proprio"] = curr_proprio
 
             # check if current step solves a task
             current_task_info = task_oracle.get_task_info_for_set(
@@ -252,16 +273,15 @@ def rollout(env, model, task_oracle, subtask, lang_annotation):
 
 def get_calvin_gripper_loc_bounds(args):
     with open(args.calvin_gripper_loc_bounds, "r") as stream:
-       bounds = yaml.safe_load(stream)
-       min_bound = bounds['act_min_bound'][:3]
-       max_bound = bounds['act_max_bound'][:3]
-       gripper_loc_bounds = np.stack([min_bound, max_bound])
+        bounds = yaml.safe_load(stream)
+        min_bound = bounds["act_min_bound"][:3]
+        max_bound = bounds["act_max_bound"][:3]
+        gripper_loc_bounds = np.stack([min_bound, max_bound])
 
     return gripper_loc_bounds
 
 
 def main(args):
-
     # These location bounds are extracted from language-annotated episodes
     if args.gripper_loc_bounds is None:
         args.gripper_loc_bounds = np.array([[-2, -2, -2], [2, 2, 2]]) * 1.0
@@ -290,22 +310,31 @@ def main(args):
     ]
 
     env = make_env(args.calvin_dataset_path, show_gui=False)
-    evaluate_policy(model, env,
-                    conf_dir=Path(args.calvin_model_path) / "conf",
-                    eval_log_dir=args.base_log_dir,
-                    sequence_indices=sequence_indices,
-                    save_video=args.save_video)
+    evaluate_policy(
+        model,
+        env,
+        conf_dir=Path(args.calvin_model_path) / "conf",
+        eval_log_dir=args.base_log_dir,
+        sequence_indices=sequence_indices,
+        save_video=args.save_video,
+    )
 
     results, sequence_inds = collect_results(args.base_log_dir)
     str_results = (
-        " ".join([f"{i + 1}/5 : {v * 100:.1f}% |"
-        for i, v in enumerate(count_success(results))]) + "|"
+        " ".join(
+            [
+                f"{i + 1}/5 : {v * 100:.1f}% |"
+                for i, v in enumerate(count_success(results))
+            ]
+        )
+        + "|"
     )
-    print(f'Load {len(results)}/1000 episodes...')
+    print(f"Load {len(results)}/1000 episodes...")
     print(str_results + "\n")
 
     del env
     gc.collect()
+
 
 if __name__ == "__main__":
     args = Arguments().parse_args()
@@ -313,7 +342,7 @@ if __name__ == "__main__":
 
     # DDP initialization
     torch.cuda.set_device(args.local_rank)
-    torch.distributed.init_process_group(backend='nccl', init_method='env://')
+    torch.distributed.init_process_group(backend="nccl", init_method="env://")
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
     torch.backends.cudnn.deterministic = True
